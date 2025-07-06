@@ -1,0 +1,18 @@
+import qrcode
+from PIL import Image
+
+# Créer le QR Code
+qr = qrcode.QRCode(
+    version=1,
+    box_size=10,
+    border=4
+)
+qr.add_data('https://icepulse.netlify.app')
+qr.make(fit=True)
+
+# Générer l'image avec couleurs inversées
+img = qr.make_image(fill_color="white", back_color="black")
+
+# Sauvegarder ou afficher
+img.save("qrcode_inversé.png")
+img.show()
