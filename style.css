@@ -24,7 +24,7 @@ a:hover {
 /* Hero avec overlay */
 .hero {
   position: relative;
-  background: url('assets/hero-bg.jpg') center/cover no-repeat;
+  background: url('assets/image\ fond\ site.png') center/cover no-repeat;
   text-align: center;
   padding: 5rem 1rem;
 }
@@ -38,7 +38,7 @@ a:hover {
 }
 .hero .logo {
   position: relative;
-  width: 200px;
+  width: 300px;
   margin-bottom: 1rem;
   z-index: 1;
 }
