@@ -149,13 +149,15 @@ a:hover {
 
 /* Grille responsive pour les galeries photos et vidéos */
 .gallerie-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 1.5em;
-  margin-top: 1em;
+  justify-content: center;
 }
 
 .gallerie-item {
+  flex: 1 1 300px;
+  max-width: 320px;
   background: #181818;
   border-radius: 8px;
   overflow: hidden;
@@ -178,9 +180,25 @@ a:hover {
   color: #ccc;
 }
 
+/* Grille pour la galerie vidéos : 3 vidéos côte à côte */
+#galerie-videos .gallerie-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5em;
+  justify-items: center;
+}
+
+#galerie-videos .gallerie-item {
+  max-width: 320px;
+  width: 100%;
+}
+
 @media (max-width: 900px) {
   .activites-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+  #galerie-videos .gallerie-grid {
+    grid-template-columns: 1fr;
   }
 }
 @media (max-width: 600px) {
