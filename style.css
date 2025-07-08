@@ -352,7 +352,6 @@ a:hover {
 .btn:hover, button:hover, input[type="submit"]:hover {
   background: linear-gradient(90deg, #0ff 30%, #0cf 100%);
   color: #111;
-  transform: scale(1.07);
 }
 
 /* Inscription */
@@ -444,5 +443,15 @@ body.light .btn, body.light button, body.light input[type="submit"] {
 body.light .btn:hover, body.light button:hover, body.light input[type="submit"]:hover {
   background: linear-gradient(90deg, #0af 30%, #0cf 100%);
   color: #111;
+}
+
+/* Garde le titre principal en blanc même en mode clair */
+body.light .hero h1 {
+  color: #fff;
+}
+
+/* Garde le sous-titre (tagline) en blanc même en mode clair */
+body.light .hero .tagline {
+  color: #fff;
 }
 
