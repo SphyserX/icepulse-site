@@ -8,47 +8,62 @@
   <meta name="author" content="ICEPULSE Association" />
   <meta name="robots" content="index, follow" />
   <meta name="google-site-verification" content="zEq9RonFe0DQebqiLH5rWofzBYqWqQfZhzgJj1ckhuc" />
-  <link rel="icon" type="image/x-icon" href="/favicon.ico">
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png">
-  <link rel="icon" type="image/png" sizes="512x512" href="/android-chrome-512x512.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-  <link rel="manifest" href="/site.webmanifest">
-  <link rel="icon" href="/favicon.ico">
 
-  <!-- Google tag (gtag.js) -->
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="/android-chrome-512x512.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+
+  <!-- Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-EJ67ELFB8H"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-
     gtag('config', 'G-EJ67ELFB8H');
   </script>
 
-  <!-- Données structurées JSON-LD -->
+  <!-- Données structurées JSON-LD enrichies -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "Organization",
+    "name": "ICEPULSE",
     "url": "https://icepulse.netlify.app",
     "logo": "https://icepulse.netlify.app/logo_fond_noir.png",
-    "name": "ICEPULSE"
+    "foundingDate": "2025",
+    "description": "ICEPULSE est une association de patinage freestyle à Bourges. Rejoignez-nous pour pratiquer le freestyle sur glace dans une ambiance conviviale.",
+    "email": "icepulsebourges@gmail.com",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "30 Rue du Pré Doulet",
+      "addressLocality": "Bourges",
+      "postalCode": "18000",
+      "addressCountry": "FR"
+    },
+    "founders": [
+      {
+        "@type": "Person",
+        "name": "Loevan Guillard"
+      },
+      {
+        "@type": "Person",
+        "name": "Mathieu Chapron"
+      }
+    ],
+    "sameAs": [
+      "https://instagram.com/icepulse18"
+    ]
   }
   </script>
 
-  <!-- Open Graph (réseaux sociaux) -->
-  <meta property="og:title" content="ICEPULSE – Freestyle sur glace à Bourges" />
-  <meta property="og:description" content="Patinage freestyle pour tous à Bourges – rejoignez l’association ICEPULSE dès septembre 2025." />
-  <meta property="og:image" content="https://icepulse.netlify.app/assets/logo.png" />
-  <meta property="og:url" content="https://icepulse.netlify.app/" />
-  <meta property="og:type" content="website" />
-
   <title>ICEPULSE – Freestyle sur glace à Bourges | Inscriptions ouvertes</title>
   <link rel="stylesheet" href="style.css" />
-  
 </head>
+
 <body>
 
   <!-- HERO -->
@@ -137,26 +152,7 @@
       <a href="documents/Dossier_Inscription_ICEPULSE_2025-2026.pdf" class="btn" download>Télécharger le formulaire</a>
     </section>
 
-    <!-- SECTION PHOTOS (désactivée, décommentez pour activer) -->
-    <!--
-    <section id="galerie-photos" class="section">
-      <h2>Galerie photos</h2>
-      <div class="grid gallerie-grid">
-        <figure class="gallerie-item">
-          <img src="assets/photo1.jpg" alt="Démonstration freestyle sur glace" />
-          <figcaption>Démonstration freestyle lors de la première session 2025</figcaption>
-        </figure>
-        <figure class="gallerie-item">
-          <img src="assets/photo2.jpg" alt="Ambiance sur la glace" />
-          <figcaption>Ambiance sur la glace avec les membres ICEPULSE</figcaption>
-        </figure>
-        <!-- Ajoutez d'autres photos ici -->
-      <!-- </div>
-    </section>
-    -->
-
-    <!-- SECTION VIDÉOS (désactivée, décommentez pour activer) -->
-    
+    <!-- VIDÉOS -->
     <section id="galerie-videos" class="section">
       <h2>Vidéos</h2>
       <div class="grid gallerie-grid">
@@ -183,7 +179,6 @@
         </figure>
       </div>
     </section>
-    
 
   </main>
 
