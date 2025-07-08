@@ -6,7 +6,8 @@
 }
 body {
   font-family: sans-serif;
-  background: #111;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0a0a23 0%, #222 100%);
   color: #fff;
   line-height: 1.6;
 }
@@ -26,6 +27,7 @@ a:hover {
   background: url('assets/image\ fond\ site.png') center/cover no-repeat;
   text-align: center;
   padding: 5rem 1rem;
+  background-attachment: fixed;
 }
 .hero .overlay {
   position: absolute;
@@ -65,7 +67,12 @@ a:hover {
 
 /* Navigation */
 .main-nav {
-  background: #222;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(34,34,34,0.98);
+  box-shadow: 0 2px 8px #0002;
+  transition: background 0.3s;
 }
 .main-nav ul {
   display: flex;
@@ -75,14 +82,65 @@ a:hover {
   list-style: none;
 }
 .main-nav li a {
-  font-weight: bold;
+  position: relative;
+  transition: color 0.3s;
+}
+.main-nav li a::after {
+  content: "";
+  display: block;
+  width: 0;
+  height: 2px;
+  background: #0cf;
+  transition: width 0.3s;
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+}
+.main-nav li a:hover::after {
+  width: 100%;
+}
+.burger {
+  display: none;
+  position: absolute;
+  top: 1.2rem;
+  right: 2rem;
+  background: none;
+  border: none;
+  font-size: 2.2rem;
+  color: #0cf;
+  z-index: 200;
+  cursor: pointer;
+}
+@media (max-width: 800px) {
+  .main-nav ul {
+    display: none;
+    flex-direction: column;
+    background: #181818;
+    position: absolute;
+    top: 60px;
+    right: 0;
+    width: 200px;
+    box-shadow: 0 2px 8px #0004;
+    padding: 1rem 0;
+  }
+  .main-nav ul.open {
+    display: flex;
+  }
+  .burger {
+    display: block;
+  }
 }
 
 /* Sections */
 .section {
-  max-width: 800px;
+  width: 90vw;
+  max-width: 1200px;
+  min-width: 320px;
   margin: 3rem auto;
-  padding: 0 1rem;
+  padding: 2rem 2vw;
+  background: rgba(20,20,30,0.85);
+  border-radius: 12px;
+  box-shadow: 0 2px 16px #0002;
 }
 .section h2 {
   font-size: 2rem;
@@ -108,11 +166,16 @@ a:hover {
   padding: 1.5rem;
   border-radius: 8px;
   text-align: center;
+  transition: transform 0.3s, box-shadow 0.3s;
 }
 .card img {
   width: 100%;
   border-radius: 50%;
   margin-bottom: 1rem;
+}
+.card:hover {
+  transform: translateY(-8px) scale(1.03);
+  box-shadow: 0 8px 24px #0cf4;
 }
 
 /* Contact */
@@ -164,6 +227,7 @@ a:hover {
   box-shadow: 0 2px 8px #0002;
   text-align: center;
   padding: 0.5em;
+  transition: transform 0.3s, box-shadow 0.3s;
 }
 
 .gallerie-item img,
@@ -179,6 +243,10 @@ a:hover {
   font-size: 0.95em;
   color: #ccc;
 }
+.gallerie-item:hover {
+  transform: translateY(-8px) scale(1.03);
+  box-shadow: 0 8px 24px #0cf4;
+}
 
 /* Grille pour la galerie vidéos : 3 vidéos côte à côte */
 #galerie-videos .gallerie-grid {
@@ -193,11 +261,27 @@ a:hover {
   width: 100%;
 }
 
+/* Aligne les 3 vidéos de la galerie sur une ligne */
+#galerie .gallerie-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5em;
+  justify-items: center;
+}
+
+#galerie .gallerie-item {
+  max-width: 320px;
+  width: 100%;
+}
+
 @media (max-width: 900px) {
   .activites-grid {
     grid-template-columns: repeat(2, 1fr);
   }
   #galerie-videos .gallerie-grid {
+    grid-template-columns: 1fr;
+  }
+  #galerie .gallerie-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -206,3 +290,142 @@ a:hover {
     grid-template-columns: 1fr;
   }
 }
+/* Animation du logo au scroll */
+.animate-logo {
+  transition: transform 0.5s ease;
+}
+
+/* Animation de bouton au survol */
+.hover-animated {
+  transition: transform 0.3s ease, background-color 0.3s ease;
+}
+.hover-animated:hover {
+  transform: scale(1.1);
+  background-color: #0ff;
+  color: #000;
+}
+.section, .card, .gallerie-item {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.7s, transform 0.7s;
+}
+.section.visible, .card.visible, .gallerie-item.visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Bouton Retour en haut */
+#backToTop {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  background: #0cf;
+  color: #000;
+  border: none;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  font-size: 2rem;
+  cursor: pointer;
+  box-shadow: 0 2px 8px #0004;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+  z-index: 200;
+}
+#backToTop.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Styles des boutons */
+.btn, button, input[type="submit"] {
+  background: linear-gradient(90deg, #0cf 30%, #0ff 100%);
+  color: #000;
+  border: none;
+  border-radius: 5px;
+  padding: 0.75rem 1.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s, color 0.3s, transform 0.2s;
+}
+.btn:hover, button:hover, input[type="submit"]:hover {
+  background: linear-gradient(90deg, #0ff 30%, #0cf 100%);
+  color: #111;
+  transform: scale(1.07);
+}
+
+/* Inscription */
+#inscriptions .btn {
+  display: inline-block;
+  margin-top: 1.5rem;
+}
+#inscriptions p {
+  margin-bottom: 0.5rem;
+}
+
+/* Loader */
+#loader {
+  position: fixed;
+  z-index: 9999;
+  background: #0a0a23;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.5s;
+}
+.spinner {
+  border: 6px solid #0cf;
+  border-top: 6px solid #fff;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+#theme-toggle {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 300;
+  background: #222;
+  color: #0cf;
+  border: none;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  box-shadow: 0 2px 8px #0004;
+  transition: background 0.3s, color 0.3s;
+}
+#theme-toggle.light {
+  background: #fff;
+  color: #222;
+}
+body.light {
+  background: linear-gradient(135deg, #f0f8ff 0%, #e0e7ef 100%);
+  color: #222;
+}
+body.light .section {
+  background: rgba(255,255,255,0.85);
+  color: #222;
+}
+body.light .card,
+body.light .gallerie-item {
+  background: #f8fafd;
+  color: #222;
+}
+body.light .main-nav {
+  background: rgba(255,255,255,0.98);
+}
+body.light .footer {
+  background: #e0e7ef;
+  color: #222;
+}
+
