@@ -409,23 +409,40 @@ a:hover {
   color: #222;
 }
 body.light {
-  background: linear-gradient(135deg, #f0f8ff 0%, #e0e7ef 100%);
-  color: #222;
+  background: linear-gradient(135deg, #e6f2fa 0%, #cfd8e6 100%);
+  color: #181818;
 }
 body.light .section {
-  background: rgba(255,255,255,0.85);
-  color: #222;
+  background: #fff;
+  color: #181818;
+  box-shadow: 0 2px 16px #b0c4de80;
 }
 body.light .card,
 body.light .gallerie-item {
-  background: #f8fafd;
-  color: #222;
+  background: #f4f8fb;
+  color: #181818;
+  box-shadow: 0 2px 8px #b0c4de80;
 }
 body.light .main-nav {
-  background: rgba(255,255,255,0.98);
+  background: #f8fafc;
+  color: #181818;
+}
+body.light .main-nav li a {
+  color: #181818;
+}
+body.light .main-nav li a::after {
+  background: #0cf;
 }
 body.light .footer {
-  background: #e0e7ef;
-  color: #222;
+  background: #e6f2fa;
+  color: #181818;
+}
+body.light .btn, body.light button, body.light input[type="submit"] {
+  background: linear-gradient(90deg, #0cf 30%, #0af 100%);
+  color: #181818;
+}
+body.light .btn:hover, body.light button:hover, body.light input[type="submit"]:hover {
+  background: linear-gradient(90deg, #0af 30%, #0cf 100%);
+  color: #111;
 }
 
