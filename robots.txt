@@ -1,4 +1,4 @@
 User-agent: *
-Allow: /
+Disallow: /assets/logo.png
 Sitemap: https://icepulse.netlify.app/sitemap.xml
 
