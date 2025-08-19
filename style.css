@@ -124,7 +124,7 @@ a:hover {
     padding: 2rem 1rem;
     transform: translateX(100%);
     transition: transform 0.4s cubic-bezier(.77,0,.18,1);
-    z-index: 10001; /* Très haut pour passer devant tout */
+    z-index: 10002; /* Correction : passe devant l'overlay */
     gap: 1.5rem;
     align-items: flex-start;
   }
@@ -136,7 +136,7 @@ a:hover {
     position: fixed;
     top: 1.2rem;
     right: 2rem;
-    z-index: 10002; /* Toujours au-dessus du menu */
+    z-index: 10003; /* Toujours au-dessus du menu */
   }
   body.menu-open {
     overflow: hidden;
@@ -149,7 +149,7 @@ a:hover {
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s;
-    z-index: 10000; /* Juste sous le menu mobile */
+    z-index: 10001; /* Correction : sous le menu mobile */
   }
   .menu-open .menu-overlay {
     opacity: 1;
@@ -248,7 +248,9 @@ a:hover {
   flex: 1 1 300px;
   max-width: 320px;
   background: #181818;
-  border-radiuspx #0002;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px #0002;
   text-align: center;
   padding: 0.5em;
   transition: transform 0.3s, box-shadow 0.3s;
