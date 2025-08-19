@@ -1,4 +1,4 @@
-// Animation du logo
+// Animation du logo quand on scrolle vers le bas
 window.addEventListener('scroll', () => {
   const logo = document.querySelector('.logo');
   if (window.scrollY > 100) {
@@ -34,53 +34,23 @@ backToTop.addEventListener('click', () => {
   window.scrollTo({top: 0, behavior: 'smooth'});
 });
 
-// Menu burger coulissant + overlay
+// Menu burger
 const burger = document.querySelector('.burger');
 const navUl = document.querySelector('.main-nav ul');
-let overlay = document.querySelector('.menu-overlay');
-if (!overlay) {
-  overlay = document.createElement('div');
-  overlay.className = 'menu-overlay';
-  document.body.appendChild(overlay);
-}
-
-function closeMenu() {
-  navUl.classList.remove('open');
-  document.body.classList.remove('menu-open');
-}
-function openMenu() {
-  navUl.classList.add('open');
-  document.body.classList.add('menu-open');
-}
-
 burger.addEventListener('click', () => {
-  if (navUl.classList.contains('open')) {
-    closeMenu();
-  } else {
-    openMenu();
-  }
+  navUl.classList.toggle('open');
 });
-
-// Ferme le menu quand on clique sur un lien
-navUl.querySelectorAll('a').forEach(link => {
-  link.addEventListener('click', closeMenu);
-});
-
-// Ferme le menu si on clique sur l'overlay
-overlay.addEventListener('click', closeMenu);
 
 // Loader
 const loader = document.getElementById('loader');
 window.addEventListener('load', () => {
-  if(loader){
-    loader.style.opacity = 0;
-    setTimeout(() => {
-      loader.style.display = 'none';
-    }, 500);
-  }
+  document.getElementById('loader').style.opacity = 0;
+  setTimeout(() => {
+    document.getElementById('loader').style.display = 'none';
+  }, 500);
 });
 
-// Scroll avec offset pour centrer la section lors du clic
+// Scroll avec offset pour centrer la section à l'écran lors du clic sur le menu
 document.querySelectorAll('.main-nav a[href^="#"]').forEach(link => {
   link.addEventListener('click', function(e) {
     const targetId = this.getAttribute('href').slice(1);
@@ -95,4 +65,14 @@ document.querySelectorAll('.main-nav a[href^="#"]').forEach(link => {
 });
 
 // Mode sombre/clair
-const themeToggle = document.getElementBy
+const themeToggle = document.getElementById('theme-toggle');
+function setTheme(light) {
+  document.body.classList.toggle('light', light);
+  themeToggle.classList.toggle('light', light);
+  themeToggle.textContent = light ? "🌞" : "🌙";
+  localStorage.setItem('theme', light ? 'light' : 'dark');
+}
+themeToggle.addEventListener('click', () => {
+  setTheme(!document.body.classList.contains('light'));
+});
+if (localStorage.getItem('theme') === 'light') setTheme(true);
