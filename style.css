@@ -24,7 +24,7 @@ a:hover {
 /* Hero avec overlay */
 .hero {
   position: relative;
-  background: url('assets/image\ fond\ site.png') center/cover no-repeat;
+  background: url('assets/image\\ fond\\ site.png') center/cover no-repeat;
   text-align: center;
   padding: 5rem 1rem;
   background-attachment: fixed;
@@ -35,7 +35,7 @@ a:hover {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.75); /* assombrissement augmenté */
+  background: rgba(0, 0, 0, 0.75);
 }
 .hero .logo {
   position: relative;
@@ -108,26 +108,55 @@ a:hover {
   border: none;
   font-size: 2.2rem;
   color: #0cf;
-  z-index: 200;
+  z-index: 400;
   cursor: pointer;
 }
+
+/* Menu mobile coulissant + overlay */
 @media (max-width: 800px) {
   .main-nav ul {
-    display: none;
+    display: flex;
     flex-direction: column;
     background: #181818;
-    position: absolute;
-    top: 60px;
+    position: fixed;
+    top: 0;
     right: 0;
-    width: 200px;
-    box-shadow: 0 2px 8px #0004;
-    padding: 1rem 0;
+    width: 220px;
+    height: 100vh;
+    box-shadow: -2px 0 12px #0006;
+    padding: 2rem 1rem;
+    transform: translateX(100%);
+    transition: transform 0.4s cubic-bezier(.77,0,.18,1);
+    z-index: 300;
+    gap: 1.5rem;
+    align-items: flex-start;
   }
   .main-nav ul.open {
-    display: flex;
+    transform: translateX(0);
   }
   .burger {
     display: block;
+    position: fixed;
+    top: 1.2rem;
+    right: 2rem;
+    z-index: 400;
+  }
+  body.menu-open {
+    overflow: hidden;
+  }
+  .menu-overlay {
+    display: block;
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.5);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    z-index: 250;
+  }
+  .menu-open .menu-overlay {
+    opacity: 1;
+    pointer-events: auto;
   }
 }
 
@@ -246,7 +275,6 @@ a:hover {
   box-shadow: 0 8px 24px #0cf4;
 }
 
-/* Grille pour la galerie vidéos : 3 vidéos côte à côte */
 #galerie-videos .gallerie-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -259,7 +287,6 @@ a:hover {
   width: 100%;
 }
 
-/* Aligne les 3 vidéos de la galerie sur une ligne */
 #galerie .gallerie-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -440,10 +467,7 @@ body.light .btn, body.light button, body.light input[type="submit"] {
 }
 body.light .btn:hover, body.light button:hover, body.light input[type="submit"]:hover {
   background: linear-gradient(90deg, #0af 30%, #0cf 100%);
-  color: #111;
-}
-
-/* Garde le titre principal en blanc même en mode clair */
+  */
 body.light .hero h1 {
   color: #fff;
 }
@@ -452,4 +476,3 @@ body.light .hero h1 {
 body.light .hero .tagline {
   color: #fff;
 }
-
