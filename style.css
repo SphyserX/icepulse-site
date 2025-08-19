@@ -65,7 +65,7 @@ a:hover {
 
 /* Navigation */
 .main-nav {
-  position: sticky;
+  position: sticky; /* par défaut desktop */
   top: 0;
   z-index: 300;
   background: rgba(34,34,34,0.98);
@@ -78,6 +78,7 @@ a:hover {
   gap: 2rem;
   padding: 1rem;
   list-style: none;
+  position: relative;
 }
 .main-nav li a {
   position: relative;
@@ -111,6 +112,15 @@ a:hover {
 
 /* Menu mobile coulissant + overlay */
 @media (max-width: 800px) {
+  .main-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: transparent; /* fond dans ul */
+    z-index: 10000;
+  }
+
   .main-nav ul {
     display: flex;
     flex-direction: column;
@@ -124,9 +134,10 @@ a:hover {
     padding: 2rem 1rem;
     transform: translateX(100%);
     transition: transform 0.4s cubic-bezier(.77,0,.18,1);
-    z-index: 10002; /* Correction : passe devant l'overlay */
+    z-index: 10002; /* devant overlay */
     gap: 1.5rem;
     align-items: flex-start;
+    pointer-events: auto;
   }
   .main-nav ul.open {
     transform: translateX(0);
@@ -136,7 +147,7 @@ a:hover {
     position: fixed;
     top: 1.2rem;
     right: 2rem;
-    z-index: 10003; /* Toujours au-dessus du menu */
+    z-index: 10003; /* au-dessus du menu */
   }
   body.menu-open {
     overflow: hidden;
@@ -149,14 +160,16 @@ a:hover {
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s;
-    z-index: 10001; /* Correction : sous le menu mobile */
+    z-index: 10001; /* sous menu */
   }
   .menu-open .menu-overlay {
     opacity: 1;
     pointer-events: auto;
   }
-  /* Annule tout z-index inutile sur le hero */
-  .hero, .hero .logo, .hero .overlay { z-index: auto !important; position: relative; }
+  .hero, .hero .logo, .hero .overlay { 
+    z-index: auto !important; 
+    position: relative; 
+  }
 }
 
 /* Sections */
@@ -236,14 +249,13 @@ a:hover {
   color: #0cf;
 }
 
-/* Grille responsive pour les galeries photos et vidéos */
+/* Galerie */
 .gallerie-grid {
   display: flex;
   flex-wrap: wrap;
   gap: 1.5em;
   justify-content: center;
 }
-
 .gallerie-item {
   flex: 1 1 300px;
   max-width: 320px;
@@ -255,7 +267,6 @@ a:hover {
   padding: 0.5em;
   transition: transform 0.3s, box-shadow 0.3s;
 }
-
 .gallerie-item img,
 .gallerie-item video {
   width: 100%;
@@ -263,7 +274,6 @@ a:hover {
   height: auto;
   border-radius: 4px;
 }
-
 .gallerie-item figcaption {
   margin-top: 0.5em;
   font-size: 0.95em;
@@ -274,37 +284,25 @@ a:hover {
   box-shadow: 0 8px 24px #0cf4;
 }
 
-#galerie-videos .gallerie-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.5em;
-  justify-items: center;
-}
-
-#galerie-videos .gallerie-item {
-  max-width: 320px;
-  width: 100%;
-}
-
+#galerie-videos .gallerie-grid,
 #galerie .gallerie-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1.5em;
   justify-items: center;
 }
-
-#galerie .gallerie-item {
+#galerie .gallerie-item,
+#galerie-videos .gallerie-item {
   max-width: 320px;
   width: 100%;
 }
 
+/* Responsive */
 @media (max-width: 900px) {
   .activites-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-  #galerie-videos .gallerie-grid {
-    grid-template-columns: 1fr;
-  }
+  #galerie-videos .gallerie-grid,
   #galerie .gallerie-grid {
     grid-template-columns: 1fr;
   }
@@ -314,12 +312,11 @@ a:hover {
     grid-template-columns: 1fr;
   }
 }
-/* Animation du logo au scroll */
+
+/* Animations */
 .animate-logo {
   transition: transform 0.5s ease;
 }
-
-/* Animation de bouton au survol */
 .hover-animated {
   transition: transform 0.3s ease, background-color 0.3s ease;
 }
@@ -362,7 +359,7 @@ a:hover {
   pointer-events: auto;
 }
 
-/* Styles des boutons */
+/* Styles boutons */
 .btn, button, input[type="submit"] {
   background: linear-gradient(90deg, #0cf 30%, #0ff 100%);
   color: #000;
@@ -411,6 +408,7 @@ a:hover {
   to { transform: rotate(360deg); }
 }
 
+/* Theme toggle */
 #theme-toggle {
   position: fixed;
   top: 20px;
@@ -469,12 +467,8 @@ body.light .btn:hover, body.light button:hover, body.light input[type="submit"]:
   color: #111;
 }
 
-/* Garde le titre principal en blanc même en mode clair */
-body.light .hero h1 {
-  color: #fff;
-}
-
-/* Garde le sous-titre (tagline) en blanc même en mode clair */
+/* Garde le titre principal et tagline en blanc même en mode clair */
+body.light .hero h1,
 body.light .hero .tagline {
   color: #fff;
 }
