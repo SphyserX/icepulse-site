@@ -1,4 +1,4 @@
-// Animation du logo quand on scrolle vers le bas
+// Animation du logo
 window.addEventListener('scroll', () => {
   const logo = document.querySelector('.logo');
   if (window.scrollY > 100) {
@@ -37,8 +37,6 @@ backToTop.addEventListener('click', () => {
 // Menu burger coulissant + overlay
 const burger = document.querySelector('.burger');
 const navUl = document.querySelector('.main-nav ul');
-
-// Ajout overlay dynamiquement si pas déjà dans le HTML
 let overlay = document.querySelector('.menu-overlay');
 if (!overlay) {
   overlay = document.createElement('div');
@@ -50,7 +48,6 @@ function closeMenu() {
   navUl.classList.remove('open');
   document.body.classList.remove('menu-open');
 }
-
 function openMenu() {
   navUl.classList.add('open');
   document.body.classList.add('menu-open');
@@ -64,17 +61,13 @@ burger.addEventListener('click', () => {
   }
 });
 
-// Ferme le menu quand on clique sur un lien du menu
+// Ferme le menu quand on clique sur un lien
 navUl.querySelectorAll('a').forEach(link => {
-  link.addEventListener('click', () => {
-    closeMenu();
-  });
+  link.addEventListener('click', closeMenu);
 });
 
 // Ferme le menu si on clique sur l'overlay
-overlay.addEventListener('click', () => {
-  closeMenu();
-});
+overlay.addEventListener('click', closeMenu);
 
 // Loader
 const loader = document.getElementById('loader');
@@ -87,7 +80,7 @@ window.addEventListener('load', () => {
   }
 });
 
-// Scroll avec offset pour centrer la section à l'écran lors du clic sur le menu
+// Scroll avec offset pour centrer la section lors du clic
 document.querySelectorAll('.main-nav a[href^="#"]').forEach(link => {
   link.addEventListener('click', function(e) {
     const targetId = this.getAttribute('href').slice(1);
@@ -102,14 +95,4 @@ document.querySelectorAll('.main-nav a[href^="#"]').forEach(link => {
 });
 
 // Mode sombre/clair
-const themeToggle = document.getElementById('theme-toggle');
-function setTheme(light) {
-  document.body.classList.toggle('light', light);
-  themeToggle.classList.toggle('light', light);
-  themeToggle.textContent = light ? "🌞" : "🌙";
-  localStorage.setItem('theme', light ? 'light' : 'dark');
-}
-themeToggle.addEventListener('click', () => {
-  setTheme(!document.body.classList.contains('light'));
-});
-if (localStorage.getItem('theme') === 'light') setTheme(true);
+const themeToggle = document.getElementBy
