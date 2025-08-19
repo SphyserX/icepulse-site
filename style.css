@@ -28,7 +28,6 @@ a:hover {
   text-align: center;
   padding: 5rem 1rem;
   background-attachment: fixed;
-  z-index: 1;
 }
 .hero .overlay {
   position: absolute;
@@ -37,19 +36,16 @@ a:hover {
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.75);
-  z-index: 100;
 }
 .hero .logo {
   position: relative;
   width: 300px;
   margin-bottom: 1rem;
-  z-index: 200;
 }
 .hero h1,
 .hero .tagline,
 .hero .btn {
   position: relative;
-  z-index: 1;
 }
 .hero h1 {
   font-size: 3rem;
@@ -82,8 +78,6 @@ a:hover {
   gap: 2rem;
   padding: 1rem;
   list-style: none;
-  z-index: 300;
-  position: relative;
 }
 .main-nav li a {
   position: relative;
@@ -112,7 +106,6 @@ a:hover {
   border: none;
   font-size: 2.2rem;
   color: #0cf;
-  z-index: 600;
   cursor: pointer;
 }
 
@@ -131,7 +124,7 @@ a:hover {
     padding: 2rem 1rem;
     transform: translateX(100%);
     transition: transform 0.4s cubic-bezier(.77,0,.18,1);
-    z-index: 9999; /* très haut pour passer devant tout */
+    z-index: 10001; /* Très haut pour passer devant tout */
     gap: 1.5rem;
     align-items: flex-start;
   }
@@ -143,7 +136,7 @@ a:hover {
     position: fixed;
     top: 1.2rem;
     right: 2rem;
-    z-index: 10001; /* toujours au-dessus du menu */
+    z-index: 10002; /* Toujours au-dessus du menu */
   }
   body.menu-open {
     overflow: hidden;
@@ -156,19 +149,14 @@ a:hover {
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s;
-    z-index: 9998; /* juste sous le menu mobile */
+    z-index: 10000; /* Juste sous le menu mobile */
   }
   .menu-open .menu-overlay {
     opacity: 1;
     pointer-events: auto;
   }
-  .hero .logo {
-    z-index: 200;
-    position: relative;
-  }
-  .hero .overlay {
-    z-index: 100;
-  }
+  /* Annule tout z-index inutile sur le hero */
+  .hero, .hero .logo, .hero .overlay { z-index: auto !important; position: relative; }
 }
 
 /* Sections */
@@ -260,9 +248,7 @@ a:hover {
   flex: 1 1 300px;
   max-width: 320px;
   background: #181818;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px #0002;
+  border-radiuspx #0002;
   text-align: center;
   padding: 0.5em;
   transition: transform 0.3s, box-shadow 0.3s;
