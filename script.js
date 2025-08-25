@@ -42,10 +42,10 @@ burger.addEventListener('click', () => {
   nav.classList.toggle('open');
 });
 
-// Fermer le menu quand on clique sur un lien
-nav.querySelectorAll('a').forEach(link => {
+// Fermer le menu quand on clique sur un lien (mobile)
+document.querySelectorAll('.main-nav a').forEach(link => {
   link.addEventListener('click', () => {
-    nav.classList.remove('open');
+    document.querySelector('.main-nav').classList.remove('open');
   });
 });
 
