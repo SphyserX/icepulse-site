@@ -40,13 +40,21 @@ const nav = document.querySelector('.main-nav');
 
 burger.addEventListener('click', () => {
   nav.classList.toggle('open');
+  burger.classList.toggle('open');
 });
 
 // Fermer le menu quand on clique sur un lien (mobile)
 document.querySelectorAll('.main-nav a').forEach(link => {
   link.addEventListener('click', () => {
-    document.querySelector('.main-nav').classList.remove('open');
+    nav.classList.remove('open');
+    burger.classList.remove('open');
   });
+});
+
+const closeMenuBtn = document.querySelector('.close-menu');
+closeMenuBtn.addEventListener('click', () => {
+  nav.classList.remove('open');
+  burger.classList.remove('open');
 });
 
 // Loader

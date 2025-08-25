@@ -125,7 +125,7 @@ a:hover {
 @media (max-width: 768px) {
   .main-nav {
     position: fixed;
-    top: 24px;
+    top: 0px;
     right: -270px; /* <-- Cache le menu hors écran par défaut */
     left: auto;
     width: 250px;
@@ -142,7 +142,7 @@ a:hover {
     overflow-y: auto;
   }
   .main-nav.open {
-    right: 20px; /* <-- Affiche le menu */
+    right: 0px; /* <-- Affiche le menu */
   }
   .main-nav ul {
     flex-direction: column;
@@ -178,33 +178,49 @@ a:hover {
     text-decoration: none;
   }
   .burger {
-    display: block;
+    display: flex;
     position: fixed;
-    top: 20px;
-    right: 20px;
-    left: auto;
-    z-index: 2001;
-    background: #0cf !important;   /* Fond bleu */
-    color: #fff !important;        /* Icône blanche */
+    top: 20px;    /* Toujours à 20px du haut */
+    right: 20px;  /* Toujours à 20px du bord droit */
+    z-index: 2002;
+    background: #0cf !important;
+    color: #fff !important;
     border: none;
     font-size: 2em;
     cursor: pointer;
     border-radius: 14px;
     width: 52px;
     height: 52px;
-    padding: 0;
-    box-shadow: 0 4px 24px #0cf2;
-    display: flex;
     align-items: center;
     justify-content: center;
     transition: box-shadow 0.2s, background 0.2s, color 0.2s;
+    box-shadow: 0 4px 24px #0cf2;
     backdrop-filter: blur(2px);
   }
-  .burger:hover,
-  .burger:focus {
-    background: #0cf !important;   /* Toujours bleu */
-    color: #fff !important;        /* Toujours blanc */
-    box-shadow: 0 6px 32px #0cf4;
+
+  .burger.open {
+    background: transparent !important;
+    color: #0cf !important;
+    box-shadow: none;
+    /* NE PAS modifier top/right ici */
+  }
+  .close-menu {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    background: transparent;
+    color: #0cf;
+    border: none;
+    font-size: 2.2em;
+    cursor: pointer;
+    z-index: 1100;
+    padding: 0;
+    line-height: 1;
+    transition: color 0.2s;
+  }
+  .close-menu:hover,
+  .close-menu:focus {
+    color: #fff;
   }
 }
 
