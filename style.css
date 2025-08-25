@@ -136,18 +136,19 @@ a:hover {
   .main-nav {
     position: fixed;
     top: 0;
-    left: -250px;
+    right: -250px;      /* Commence caché à droite */
+    left: auto;
     width: 220px;
     height: 100%;
     background: #181818;
-    box-shadow: 2px 0 8px rgba(0,0,0,0.2);
-    transition: left 0.3s;
+    box-shadow: -2px 0 8px rgba(0,0,0,0.2);
+    transition: right 0.3s;
     z-index: 1000;
     padding-top: 60px;
     display: block;
   }
   .main-nav.open {
-    left: 0;
+    right: 0;           /* S’ouvre depuis la droite */
   }
   .main-nav ul {
     flex-direction: column;
