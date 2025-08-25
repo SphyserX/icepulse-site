@@ -34,11 +34,19 @@ backToTop.addEventListener('click', () => {
   window.scrollTo({top: 0, behavior: 'smooth'});
 });
 
-// Menu burger
+// Menu coulissant mobile
 const burger = document.querySelector('.burger');
-const navUl = document.querySelector('.main-nav ul');
+const nav = document.querySelector('.main-nav');
+
 burger.addEventListener('click', () => {
-  navUl.classList.toggle('open');
+  nav.classList.toggle('open');
+});
+
+// Fermer le menu quand on clique sur un lien
+nav.querySelectorAll('a').forEach(link => {
+  link.addEventListener('click', () => {
+    nav.classList.remove('open');
+  });
 });
 
 // Loader

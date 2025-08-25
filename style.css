@@ -131,6 +131,68 @@ a:hover {
   }
 }
 
+/* Masquer la navigation sur mobile, afficher le burger */
+@media (max-width: 768px) {
+  .main-nav {
+    position: fixed;
+    top: 0;
+    left: -250px;
+    width: 220px;
+    height: 100%;
+    background: #181818;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.2);
+    transition: left 0.3s;
+    z-index: 1000;
+    padding-top: 60px;
+    display: block;
+  }
+  .main-nav.open {
+    left: 0;
+  }
+  .main-nav ul {
+    flex-direction: column;
+    gap: 1.5em;
+    padding: 0;
+  }
+  .main-nav li {
+    margin: 1em 0;
+  }
+  .burger {
+    display: block;
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1100;
+    background: #fff;
+    border: none;
+    font-size: 2em;
+    cursor: pointer;
+    border-radius: 8px;
+    padding: 0.3em 0.6em;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+}
+
+/* Sur desktop, cacher le burger */
+@media (min-width: 769px) {
+  .burger {
+    display: none;
+  }
+  .main-nav {
+    position: static;
+    width: auto;
+    height: auto;
+    background: none;
+    box-shadow: none;
+    padding-top: 0;
+    display: block;
+  }
+  .main-nav ul {
+    flex-direction: row;
+    gap: 2em;
+  }
+}
+
 /* Sections */
 .section {
   max-width: 800px;
