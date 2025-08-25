@@ -1,4 +1,4 @@
-// Animation du logo quand on scrolle vers le bas
+// Animation du logo quand on scrolle
 window.addEventListener('scroll', () => {
   const logo = document.querySelector('.logo');
   if (window.scrollY > 100) {
@@ -34,39 +34,53 @@ backToTop.addEventListener('click', () => {
   window.scrollTo({top: 0, behavior: 'smooth'});
 });
 
-// Menu coulissant mobile
+// Menu mobile et changement d'icône / fond
 const burger = document.querySelector('.burger');
 const nav = document.querySelector('.main-nav');
 
 burger.addEventListener('click', () => {
   nav.classList.toggle('open');
-  burger.classList.toggle('open');
+
+  if(nav.classList.contains('open')){
+    burger.textContent = "✖";          // croix
+    burger.style.background = "transparent"; // fond transparent
+  } else {
+    burger.textContent = "☰";          // burger
+    burger.style.background = "#0cf";       // fond bleu
+  }
 });
 
-// Fermer le menu quand on clique sur un lien (mobile)
+// Fermer le menu quand on clique sur un lien
 document.querySelectorAll('.main-nav a').forEach(link => {
   link.addEventListener('click', () => {
     nav.classList.remove('open');
-    burger.classList.remove('open');
+    burger.textContent = "☰";
+    burger.style.background = "#0cf";
   });
 });
 
+// Fermer le menu si bouton close-menu existe
 const closeMenuBtn = document.querySelector('.close-menu');
-closeMenuBtn.addEventListener('click', () => {
-  nav.classList.remove('open');
-  burger.classList.remove('open');
-});
+if(closeMenuBtn){
+  closeMenuBtn.addEventListener('click', () => {
+    nav.classList.remove('open');
+    burger.textContent = "☰";
+    burger.style.background = "#0cf";
+  });
+}
 
 // Loader
 const loader = document.getElementById('loader');
 window.addEventListener('load', () => {
-  document.getElementById('loader').style.opacity = 0;
-  setTimeout(() => {
-    document.getElementById('loader').style.display = 'none';
-  }, 500);
+  if(loader){
+    loader.style.opacity = 0;
+    setTimeout(() => {
+      loader.style.display = 'none';
+    }, 500);
+  }
 });
 
-// Scroll avec offset pour centrer la section à l'écran lors du clic sur le menu
+// Scroll avec offset pour centrer la section lors du clic sur un lien
 document.querySelectorAll('.main-nav a[href^="#"]').forEach(link => {
   link.addEventListener('click', function(e) {
     const targetId = this.getAttribute('href').slice(1);
