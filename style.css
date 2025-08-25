@@ -23,11 +23,16 @@ a:hover {
 /* Hero avec overlay */
 .hero {
   position: relative;
-  background: url('assets/image\ fond\ site.png') center/cover no-repeat;
-  text-align: center;
+  background-image: url('assets/image-fond-site.png');
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  min-height: 100vh;
   padding: 5rem 1rem;
-  background-attachment: fixed;
+  background-attachment: scroll; /* compatible iPhone */
+  text-align: center;
 }
+
 .hero .overlay {
   position: absolute;
   top: 0;
