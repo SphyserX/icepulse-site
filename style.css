@@ -16,7 +16,6 @@ a {
   color: #0cf;
   text-decoration: none;
 }
-
 a:hover {
   text-decoration: underline;
 }
@@ -35,7 +34,7 @@ a:hover {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.75); /* assombrissement augmenté */
+  background: rgba(0, 0, 0, 0.75);
 }
 .hero .logo {
   position: relative;
@@ -99,34 +98,54 @@ a:hover {
 .main-nav li a:hover::after {
   width: 100%;
 }
+
+/* Burger classique sur desktop (caché) */
 .burger {
   display: none;
-  position: absolute;
-  top: 1.2rem;
-  right: 2rem;
-  background: #0cf !important;   /* Fond bleu */
-  color: #fff !important;        /* Icône blanche */
-  border: none;
-  font-size: 2em;
-  cursor: pointer;
-  border-radius: 14px;
-  width: 52px;
-  height: 52px;
-  padding: 0;
-  box-shadow: 0 4px 24px #0cf2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: box-shadow 0.2s, background 0.2s, color 0.2s;
-  backdrop-filter: blur(2px);
 }
 
-/* Masquer la navigation sur mobile, afficher le burger */
+/* Burger animé avec 3 lignes */
+.burger {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  padding: 0;
+  cursor: pointer;
+  transition: background 0.3s, box-shadow 0.3s;
+}
+.burger span {
+  display: block;
+  width: 28px;
+  height: 3px;
+  background: #fff;
+  border-radius: 2px;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+.burger.open {
+  background: transparent !important; /* fond transparent pour la croix */
+  box-shadow: none;
+}
+.burger.open span:nth-child(1) {
+  transform: rotate(45deg) translate(5px, 5px);
+}
+.burger.open span:nth-child(2) {
+  opacity: 0;
+}
+.burger.open span:nth-child(3) {
+  transform: rotate(-45deg) translate(5px, -5px);
+}
+
+/* Masquer la navigation sur mobile et afficher burger */
 @media (max-width: 768px) {
   .main-nav {
     position: fixed;
     top: 0px;
-    right: -270px; /* <-- Cache le menu hors écran par défaut */
+    right: -270px;
     left: auto;
     width: 250px;
     height: auto;
@@ -142,7 +161,7 @@ a:hover {
     overflow-y: auto;
   }
   .main-nav.open {
-    right: 0px; /* <-- Affiche le menu */
+    right: 0px;
   }
   .main-nav ul {
     flex-direction: column;
@@ -177,51 +196,29 @@ a:hover {
     box-shadow: 0 4px 24px #0cf3;
     text-decoration: none;
   }
-  .burger {
-    display: flex;
-    position: fixed;
-    top: 0px;    /* Toujours à 5px du haut */
-    right: 0px;  /* Toujours à 5px du bord droit */
-    z-index: 2002;
-    background: #0cf !important;
-    color: #fff !important;
-    border: none;
-    font-size: 2em;
-    cursor: pointer;
-    border-radius: 14px;
-    width: 52px;
-    height: 52px;
-    align-items: center;
-    justify-content: center;
-    transition: box-shadow 0.2s, background 0.2s, color 0.2s;
-    box-shadow: 0 4px 24px #0cf2;
-    backdrop-filter: blur(2px);
-  }
-
-  .burger.open {
-    background: transparent !important;
-    color: #0cf !important;
-    box-shadow: none;
-    /* NE PAS modifier top/right ici */
-  }
-  .close-menu {
-    position: absolute;
-    top: 12px;
-    right: 16px;
-    background: transparent;
-    color: #0cf;
-    border: none;
-    font-size: 2.2em;
-    cursor: pointer;
-    z-index: 1100;
-    padding: 0;
-    line-height: 1;
-    transition: color 0.2s;
-  }
-  .close-menu:hover,
-  .close-menu:focus {
-    color: #fff;
-  }
+  @media (max-width: 768px) {
+    .burger {
+        display: flex
+;
+        position: fixed;
+        top: 0px;
+        right: 0px;
+        z-index: 2002;
+        background: #0cf !important;
+        color: #fff !important;
+        border: none;
+        font-size: 2em;
+        cursor: pointer;
+        border-radius: 14px;
+        width: 52px;
+        height: 52px;
+        align-items: center;
+        justify-content: center;
+        transition: box-shadow 0.2s, background 0.2s, color 0.2s;
+        box-shadow: 0 4px 24px #0cf2;
+        backdrop-filter: blur(2px);
+    }
+}
 }
 
 /* Sur desktop, cacher le burger */
@@ -328,7 +325,6 @@ a:hover {
   gap: 1.5em;
   justify-content: center;
 }
-
 .gallerie-item {
   flex: 1 1 300px;
   max-width: 320px;
@@ -340,7 +336,6 @@ a:hover {
   padding: 0.5em;
   transition: transform 0.3s, box-shadow 0.3s;
 }
-
 .gallerie-item img,
 .gallerie-item video {
   width: 100%;
@@ -348,7 +343,6 @@ a:hover {
   height: auto;
   border-radius: 4px;
 }
-
 .gallerie-item figcaption {
   margin-top: 0.5em;
   font-size: 0.95em;
@@ -359,38 +353,10 @@ a:hover {
   box-shadow: 0 8px 24px #0cf4;
 }
 
-/* Grille pour la galerie vidéos : 3 vidéos côte à côte */
-#galerie-videos .gallerie-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.5em;
-  justify-items: center;
-}
-
-#galerie-videos .gallerie-item {
-  max-width: 320px;
-  width: 100%;
-}
-
-/* Aligne les 3 vidéos de la galerie sur une ligne */
-#galerie .gallerie-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.5em;
-  justify-items: center;
-}
-
-#galerie .gallerie-item {
-  max-width: 320px;
-  width: 100%;
-}
-
+/* Grid responsive galerie */
 @media (max-width: 900px) {
   .activites-grid {
     grid-template-columns: repeat(2, 1fr);
-  }
-  #galerie-videos .gallerie-grid {
-    grid-template-columns: 1fr;
   }
   #galerie .gallerie-grid {
     grid-template-columns: 1fr;
@@ -401,20 +367,8 @@ a:hover {
     grid-template-columns: 1fr;
   }
 }
-/* Animation du logo au scroll */
-.animate-logo {
-  transition: transform 0.5s ease;
-}
 
-/* Animation de bouton au survol */
-.hover-animated {
-  transition: transform 0.3s ease, background-color 0.3s ease;
-}
-.hover-animated:hover {
-  transform: scale(1.1);
-  background-color: #0ff;
-  color: #000;
-}
+/* Animation scroll pour sections, cartes et galerie */
 .section, .card, .gallerie-item {
   opacity: 0;
   transform: translateY(40px);
@@ -425,7 +379,7 @@ a:hover {
   transform: none;
 }
 
-/* Bouton Retour en haut */
+/* Retour en haut */
 #backToTop {
   position: fixed;
   bottom: 30px;
@@ -449,55 +403,7 @@ a:hover {
   pointer-events: auto;
 }
 
-/* Styles des boutons */
-.btn, button, input[type="submit"] {
-  background: linear-gradient(90deg, #0cf 30%, #0ff 100%);
-  color: #000;
-  border: none;
-  border-radius: 5px;
-  padding: 0.75rem 1.5rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background 0.3s, color 0.3s, transform 0.2s;
-}
-.btn:hover, button:hover, input[type="submit"]:hover {
-  background: linear-gradient(90deg, #0ff 30%, #0cf 100%);
-  color: #111;
-}
-
-/* Inscription */
-#inscriptions .btn {
-  display: inline-block;
-  margin-top: 1.5rem;
-}
-#inscriptions p {
-  margin-bottom: 0.5rem;
-}
-
-/* Loader */
-#loader {
-  position: fixed;
-  z-index: 9999;
-  background: #0a0a23;
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 0.5s;
-}
-.spinner {
-  border: 6px solid #0cf;
-  border-top: 6px solid #fff;
-  border-radius: 50%;
-  width: 60px;
-  height: 60px;
-  animation: spin 1s linear infinite;
-}
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
+/* Thème clair */
 #theme-toggle {
   position: fixed;
   top: 20px;
@@ -556,12 +462,23 @@ body.light .btn:hover, body.light button:hover, body.light input[type="submit"]:
   color: #111;
 }
 
-/* Garde le titre principal en blanc même en mode clair */
-body.light .hero h1 {
-  color: #fff;
+/* Logo animé */
+.animate-logo {
+  transition: transform 0.5s ease;
 }
 
-/* Garde le sous-titre (tagline) en blanc même en mode clair */
+/* Bouton hover */
+.hover-animated {
+  transition: transform 0.3s ease, background-color 0.3s ease;
+}
+.hover-animated:hover {
+  transform: scale(1.1);
+  background-color: #0ff;
+  color: #000;
+}
+
+/* Garder le titre et tagline en blanc même en mode clair */
+body.light .hero h1,
 body.light .hero .tagline {
   color: #fff;
 }

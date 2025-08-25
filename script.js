@@ -1,4 +1,6 @@
-// Animation du logo quand on scrolle
+// ==========================
+// Animation du logo au scroll
+// ==========================
 window.addEventListener('scroll', () => {
   const logo = document.querySelector('.logo');
   if (window.scrollY > 100) {
@@ -8,7 +10,9 @@ window.addEventListener('scroll', () => {
   }
 });
 
+// ==========================
 // Animation d'apparition au scroll
+// ==========================
 const revealElements = document.querySelectorAll('.section, .card, .gallerie-item');
 function revealOnScroll() {
   revealElements.forEach(el => {
@@ -21,7 +25,9 @@ function revealOnScroll() {
 window.addEventListener('scroll', revealOnScroll);
 window.addEventListener('load', revealOnScroll);
 
+// ==========================
 // Bouton retour en haut
+// ==========================
 const backToTop = document.getElementById('backToTop');
 window.addEventListener('scroll', () => {
   if (window.scrollY > 300) {
@@ -31,61 +37,50 @@ window.addEventListener('scroll', () => {
   }
 });
 backToTop.addEventListener('click', () => {
-  window.scrollTo({top: 0, behavior: 'smooth'});
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
-// Menu mobile et changement d'icône / fond
+// ==========================
+// Menu mobile et burger animé
+// ==========================
 const burger = document.querySelector('.burger');
 const nav = document.querySelector('.main-nav');
 
 burger.addEventListener('click', () => {
   nav.classList.toggle('open');
-
-  if(nav.classList.contains('open')){
-    burger.textContent = "✖";          // croix
-    burger.style.background = "transparent"; // fond transparent
-  } else {
-    burger.textContent = "☰";          // burger
-    burger.style.background = "#0cf";       // fond bleu
-  }
+  burger.classList.toggle('open');
+  // Change l'icône
+  burger.dataset.icon = burger.classList.contains('open') ? '✖' : '☰';
 });
 
-// Fermer le menu quand on clique sur un lien
+// Fermer le menu au clic sur un lien
 document.querySelectorAll('.main-nav a').forEach(link => {
   link.addEventListener('click', () => {
     nav.classList.remove('open');
-    burger.textContent = "☰";
-    burger.style.background = "#0cf";
+    burger.classList.remove('open');
+    burger.dataset.icon = '☰';
   });
 });
 
-// Fermer le menu si bouton close-menu existe
-const closeMenuBtn = document.querySelector('.close-menu');
-if(closeMenuBtn){
-  closeMenuBtn.addEventListener('click', () => {
-    nav.classList.remove('open');
-    burger.textContent = "☰";
-    burger.style.background = "#0cf";
-  });
-}
-
+// ==========================
 // Loader
+// ==========================
 const loader = document.getElementById('loader');
 window.addEventListener('load', () => {
   if(loader){
     loader.style.opacity = 0;
-    setTimeout(() => {
-      loader.style.display = 'none';
-    }, 500);
+    setTimeout(() => loader.style.display = 'none', 500);
   }
 });
 
-// Scroll avec offset pour centrer la section lors du clic sur un lien
+// ==========================
+// Scroll avec offset centré
+// ==========================
 document.querySelectorAll('.main-nav a[href^="#"]').forEach(link => {
   link.addEventListener('click', function(e) {
     const targetId = this.getAttribute('href').slice(1);
     const target = document.getElementById(targetId);
-    if (target) {
+    if(target){
       e.preventDefault();
       const rect = target.getBoundingClientRect();
       const scrollY = window.scrollY + rect.top - (window.innerHeight/2) + (rect.height/2);
@@ -94,7 +89,9 @@ document.querySelectorAll('.main-nav a[href^="#"]').forEach(link => {
   });
 });
 
-// Mode sombre/clair
+// ==========================
+// Mode sombre / clair
+// ==========================
 const themeToggle = document.getElementById('theme-toggle');
 function setTheme(light) {
   document.body.classList.toggle('light', light);
@@ -106,3 +103,15 @@ themeToggle.addEventListener('click', () => {
   setTheme(!document.body.classList.contains('light'));
 });
 if (localStorage.getItem('theme') === 'light') setTheme(true);
+
+// ==========================
+// Mise à jour visuelle du burger via CSS data-icon
+// ==========================
+const updateBurgerIcon = () => {
+  burger.textContent = burger.dataset.icon || '☰';
+};
+updateBurgerIcon();
+
+// Observer pour mettre à jour à chaque changement de classe open
+const observer = new MutationObserver(updateBurgerIcon);
+observer.observe(burger, { attributes: true, attributeFilter: ['class'] });
