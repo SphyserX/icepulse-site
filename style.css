@@ -180,8 +180,8 @@ a:hover {
   .burger {
     display: flex;
     position: fixed;
-    top: 20px;    /* Toujours à 20px du haut */
-    right: 20px;  /* Toujours à 20px du bord droit */
+    top: 0px;    /* Toujours à 5px du haut */
+    right: 0px;  /* Toujours à 5px du bord droit */
     z-index: 2002;
     background: #0cf !important;
     color: #fff !important;
