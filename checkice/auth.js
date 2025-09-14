@@ -37,7 +37,7 @@ signupBtn.addEventListener("click", () => {
       authMessage.textContent = `Compte créé pour : ${user.email}`;
       
       // Redirection vers la page principale
-      window.location.href = "/checkice/index.html";
+      window.location.href = "index.html";
     })
     .catch((error) => {
       authMessage.textContent = `Erreur : ${error.message}`;
@@ -60,7 +60,7 @@ loginBtn.addEventListener("click", () => {
       authMessage.textContent = `Connecté : ${user.email}`;
       
       // Redirection vers la page principale
-      window.location.href = "checkice/index.html";
+      window.location.href = "index.html";
     })
     .catch((error) => {
       authMessage.textContent = `Erreur : ${error.message}`;
