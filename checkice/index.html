@@ -33,6 +33,11 @@
   <script async data-id="five-server" data-file="c:\Users\Mathieu\CHECKICE\index.html" type="application/javascript" src="/fiveserver.js"></script>
   </head>
 <body class="min-h-screen">
+    <!-- ✅ LOADER D'AUTHENTIFICATION -->
+    <div id="auth-loader" class="auth-loader">
+        <div class="auth-loader-spinner"></div>
+        <div class="auth-loader-text">Vérification de votre connexion...</div>
+    </div>
     <script type="module">
   import { auth } from "./firebase.js";
   import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
