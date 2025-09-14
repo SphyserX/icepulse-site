@@ -1,0 +1,1071 @@
+body
+        
+        {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #e0f7ff 0%, #f0f9ff 50%, #e6f3ff 100%);
+            min-height: 100vh;
+        }
+        
+        .ice-gradient {
+            background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 50%, #93c5fd 100%);
+        }
+        
+        .ice-gradient-soft {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 50%, #93c5fd 100%);
+        }
+        
+        .ice-shadow {
+            box-shadow: 0 8px 32px rgba(59, 130, 246, 0.15);
+        }
+        
+        .ice-shadow-lg {
+            box-shadow: 0 20px 60px rgba(59, 130, 246, 0.2);
+        }
+        
+        .frost-effect {
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .tab-active {
+            background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+            color: white;
+            font-weight: 600;
+            transform: scale(1.02);
+        }
+        
+        .ice-button {
+            background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+        
+        .ice-button:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+        }
+        
+        .ice-button-secondary {
+            background: transparent;
+            border: 2px solid #3b82f6;
+            color: #3b82f6;
+            transition: all 0.3s ease;
+        }
+        
+        .ice-button-secondary:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: #2563eb;
+            color: #2563eb;
+        }
+        
+        #map {
+            height: 100%;
+            width: 100%;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(59, 130, 246, 0.2);
+        }
+        
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(59, 130, 246, 0.25);
+        }
+        
+        .search-bar {
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+        }
+        
+        .search-bar:focus {
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+            background: rgba(255, 255, 255, 0.95);
+        }
+        
+        .friend-status-online {
+            background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+            animation: pulse-green 2s infinite;
+        }
+        
+        .friend-status-offline {
+            background: #9ca3af;
+        }
+        
+        @keyframes pulse-green {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .checklist-item {
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+        
+        .checklist-item:hover {
+            background: rgba(255, 255, 255, 0.95);
+            border-color: rgba(59, 130, 246, 0.2);
+            transform: translateX(4px);
+        }
+        
+        .checklist-item.checked {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+        
+        .checklist-item.checked .check-circle {
+            background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+        
+        .check-circle {
+            transition: all 0.3s ease;
+        }
+        
+        .points-badge {
+            background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+            animation: glow 3s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3); }
+            to { box-shadow: 0 6px 20px rgba(245, 158, 11, 0.5); }
+        }
+        
+        .content-section {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        .content-section.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal.active {
+            display: flex;
+            animation: modalFadeIn 0.3s ease-out;
+        }
+        
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal-content {
+            width: 90%;
+            max-width: 500px;
+            max-height: 85vh;
+            overflow-y: auto;
+            border-radius: 20px;
+            animation: modalSlideIn 0.3s ease-out;
+        }
+        
+        @keyframes modalSlideIn {
+            from { transform: translateY(-50px) scale(0.9); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+        
+        .notification-panel {
+            position: fixed;
+            top: 90px;
+            right: 20px;
+            width: 320px;
+            max-height: 450px;
+            overflow-y: auto;
+            z-index: 900;
+            display: none;
+            animation: slideInRight 0.3s ease-out;
+        }
+        
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .notification-panel.active {
+            display: block;
+        }
+        
+        .notification-item {
+            transition: all 0.3s ease;
+        }
+        
+        .notification-item:hover {
+            background: rgba(255, 255, 255, 0.95);
+            transform: translateX(-4px);
+        }
+        
+        .notification-item.unread {
+            border-left: 4px solid #3b82f6;
+            background: rgba(59, 130, 246, 0.05);
+        }
+        
+        .achievement-badge {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .achievement-badge:hover {
+            transform: scale(1.08);
+        }
+        
+        .achievement-badge.locked {
+            filter: grayscale(1);
+            opacity: 0.6;
+        }
+        
+        .achievement-badge.locked:hover {
+            filter: grayscale(0.7);
+            opacity: 0.8;
+        }
+        
+        .friend-request {
+            animation: pulse-blue 2s infinite;
+        }
+        
+        @keyframes pulse-blue {
+            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(59, 130, 246, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        }
+        
+        .weather-card {
+            transition: all 0.3s ease;
+        }
+        
+        .weather-card:hover {
+            transform: translateY(-4px);
+        }
+        
+        .tooltip {
+            position: relative;
+        }
+        
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 140px;
+            background: rgba(0, 0, 0, 0.9);
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 12px;
+        }
+        
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%);
+            transition: width 0.5s ease;
+        }
+        
+        .stats-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .floating-action {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 100;
+        }
+        
+        .tab-button {
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .tab-button:hover:not(.tab-active) {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+        
+        .level-progress {
+            background: linear-gradient(90deg, #10b981 0%, #34d399 50%, #6ee7b7 100%);
+        }
+        
+        .rink-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 100%);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .event-type-competition {
+            background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+        }
+        
+        .event-type-show {
+            background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+        }
+        
+        .event-type-lesson {
+            background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+        }
+        
+        .event-type-tournament {
+            background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+        }
+        
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .conversation-item.active {
+            background: rgba(59, 130, 246, 0.1);
+            border-left: 4px solid #3b82f6;
+            transform: translateX(4px);
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        
+        .streak-fire {
+            animation: fire 1.5s ease-in-out infinite alternate;
+        }
+        
+        @keyframes fire {
+            0% { transform: scale(1) rotate(-2deg); }
+            100% { transform: scale(1.1) rotate(2deg); }
+        }
+        
+        /* Styles pour les popups de la carte */
+        .leaflet-popup-content-wrapper {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .leaflet-popup-tip {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+        }
+        
+        .custom-popup .leaflet-popup-content {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .leaflet-popup-close-button {
+            color: #6b7280 !important;
+            font-size: 18px !important;
+            font-weight: bold !important;
+            padding: 8px !important;
+        }
+        
+        .leaflet-popup-close-button:hover {
+            color: #374151 !important;
+            background: rgba(0, 0, 0, 0.05) !important;
+            border-radius: 50% !important;
+        }
+        
+        /* Animation pour les marqueurs */
+        .marker-pulse {
+            animation: markerPulse 2s infinite;
+        }
+        
+        @keyframes markerPulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        /* Amélioration de la recherche */
+        .search-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 0 0 16px 16px;
+            box-shadow: 0 10px 40px rgba(59, 130, 246, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-top: none;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .search-suggestion {
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .search-suggestion:hover {
+            background: rgba(59, 130, 246, 0.1);
+        }
+        
+        .search-suggestion:last-child {
+            border-bottom: none;
+        }
+        
+        #profile-menu {
+    position: absolute;
+    top: calc(100% + 8px); /* Positionné sous le bouton avec un espacement */
+    right: 0; /* Aligné à droite du bouton */
+    width: 16rem; /* w-64 en Tailwind = 256px = 16rem */
+    background: white;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    border-radius: 0.75rem; /* rounded-xl */
+    z-index: 50;
+    padding: 1rem;
+    
+    /* Animation et visibilité */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.2s ease-out;
+}
+
+/* État actif du menu */
+#profile-menu.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* Assurez-vous que le conteneur parent a la bonne position */
+.relative {
+    position: relative;
+}
+
+/* Style de l'avatar dans le menu */
+#profile-avatar {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 9999px;
+    background: linear-gradient(to right, #3b82f6, #06b6d4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.5rem auto;
+    color: white;
+    font-weight: bold;
+    font-size: 1.125rem;
+}
+
+/* Input du nom d'utilisateur */
+#profile-username {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    margin-bottom: 0.25rem;
+    text-align: center;
+    font-size: 0.875rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+#profile-username:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 1px #3b82f6;
+}
+
+/* Email de l'utilisateur */
+#profile-email {
+    font-size: 0.875rem;
+    color: #6b7280;
+    text-align: center;
+    margin-bottom: 0.5rem;
+    word-break: break-all;
+}
+
+/* Séparateur */
+#profile-menu hr {
+    margin: 0.5rem 0;
+    border: none;
+    border-top: 1px solid #e5e7eb;
+}
+
+/* Boutons du menu */
+#profile-menu button {
+    width: 100%;
+    text-align: left;
+    padding: 0.5rem;
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    transition: background-color 0.15s ease;
+    color: #374151;
+}
+
+#profile-menu button:hover {
+    background-color: #f3f4f6;
+}
+
+/* Bouton de déconnexion spécifique */
+#logout-btn {
+    margin-top: 0.5rem;
+    color: #ef4444;
+}
+
+#logout-btn:hover {
+    background-color: #fef2f2;
+    color: #dc2626;
+}
+
+/* Responsive - sur mobile */
+@media (max-width: 640px) {
+    #profile-menu {
+        right: -2rem; /* Légèrement décalé pour éviter le débordement */
+        width: 14rem; /* Plus petit sur mobile */
+    }
+}
+
+/* Animation pour les notifications du système */
+@keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideOutRight {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
+}
+
+
+/* Menus header plus grands et plus confortables */
+#header-rinks-menu {
+    max-height: 70vh !important; /* 70% de la hauteur de l'écran */
+    min-height: 500px !important;
+    width: 400px !important; /* Un peu plus large aussi */
+}
+
+#header-moves-menu {
+    max-height: 75vh !important; /* 75% de la hauteur de l'écran */
+    min-height: 600px !important;
+    width: 450px !important; /* Un peu plus large aussi */
+}
+
+/* Conteneurs de listes avec scroll plus spacieux */
+#rinks-checkbox-container {
+    max-height: 300px !important; /* Plus de place pour les checkboxes */
+}
+
+#header-moves-list-container {
+    max-height: 250px !important; /* Plus de place pour la liste des déplacements */
+}
+
+/* Responsive - plus petit sur mobile */
+@media (max-width: 768px) {
+    #header-rinks-menu,
+    #header-moves-menu {
+        width: 95vw !important;
+        max-width: 350px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        right: auto !important;
+    }
+}
+
+/* Styles pour les modales "Mes Patinoires" et "Mes Déplacements" */
+.rinks-modal, .moves-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 1050;
+    justify-content: center;
+    align-items: center;
+}
+
+.rinks-modal.active, .moves-modal.active {
+    display: flex;
+    animation: modalFadeIn 0.3s ease-out;
+}
+
+.rinks-modal .modal-content, .moves-modal .modal-content {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    width: 90%;
+    max-width: 500px;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+    animation: modalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Conteneurs spécifiques dans les modales */
+.rinks-modal #rinks-checkbox-container {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.moves-modal #header-moves-list-container {
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+/* ✅ SOLUTION SPÉCIFIQUE POUR LA MODALE MES DÉPLACEMENTS */
+#moves-modal .modal-content {
+  max-width: 800px !important;
+  max-height: 95vh !important;
+  width: 95% !important;
+  padding: 2.5rem !important;
+}
+
+/* ✅ Container de la liste des déplacements plus grand */
+#moves-modal #moves-modal-list-container {
+  max-height: 400px !important;
+  overflow-y: auto !important;
+  margin-bottom: 1rem !important;
+}
+
+/* ✅ Formulaire plus spacieux */
+#moves-modal form {
+  margin-top: 2rem !important;
+}
+
+/* ✅ Responsive pour mobile */
+@media (max-width: 768px) {
+  #moves-modal .modal-content {
+    max-width: 95vw !important;
+    width: 95% !important;
+    padding: 1.5rem !important;
+  }
+}
+
+
+/* ✅ AGRANDIR LA MODALE "MES PATINOIRES" */
+#rinks-modal .modal-content {
+  max-width: 800px !important;
+  max-height: 95vh !important;
+  width: 95% !important;
+  padding: 2.5rem !important;
+}
+
+/* ✅ Container des checkboxes plus grand */
+#rinks-modal #rinks-checkbox-container {
+  max-height: 400px !important;
+  overflow-y: auto !important;
+  margin-bottom: 1rem !important;
+}
+
+/* ✅ Espacement du formulaire */
+#rinks-modal form {
+  margin-top: 2rem !important;
+}
+
+/* ✅ Responsive pour mobile */
+@media (max-width: 768px) {
+  #rinks-modal .modal-content {
+    max-width: 95vw !important;
+    width: 95% !important;
+    padding: 1.5rem !important;
+  }
+}
+
+
+/* ✅ AGRANDIR LA MODALE "MON COMPTE" */
+#account-settings-modal .modal-content {
+  max-width: 800px !important;
+  max-height: 95vh !important;
+  width: 95% !important;
+  padding: 2.5rem !important;
+  overflow-y: auto !important;
+}
+
+/* ✅ Améliorer l'espacement du formulaire */
+#account-settings-modal form {
+  margin-top: 1.5rem !important;
+}
+
+/* ✅ Espacement des champs du formulaire */
+#account-settings-modal .space-y-4 > * + * {
+  margin-top: 1.5rem !important;
+}
+
+/* ✅ Responsive pour mobile */
+@media (max-width: 768px) {
+  #account-settings-modal .modal-content {
+    max-width: 95vw !important;
+    width: 95% !important;
+    padding: 1.5rem !important;
+  }
+}
+
+
+
+/* ✅ STYLE PILLS MODERNE - THÈME BLEU CORRIGÉ */
+
+#rinks-modal input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  margin-right: 10px;
+  border: 2px solid #cbd5e1;
+  border-radius: 50%;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
+  outline: none;
+}
+
+/* ✅ CORRECTION DU BUG : Survol avec z-index élevé */
+#rinks-modal input[type="checkbox"]:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  z-index: 10; /* ← Corrige le bug de superposition */
+  position: relative;
+}
+
+/* ✅ État coché - Thème bleu */
+#rinks-modal input[type="checkbox"]:checked {
+  background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.3);
+  z-index: 2;
+}
+
+/* ✅ Point central blanc */
+#rinks-modal input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  background: white;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: dotPop 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  z-index: 3;
+}
+
+/* ✅ Animation du point central */
+@keyframes dotPop {
+  0% { transform: translate(-50%, -50%) scale(0); }
+  100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+/* ✅ Style des labels - Pills avec thème bleu */
+#rinks-modal label {
+  display: flex !important;
+  align-items: center !important;
+  padding: 10px 16px !important;
+  margin: 4px 0 !important;
+  border-radius: 25px !important;
+  background: rgba(255, 255, 255, 0.7) !important;
+  border: 1px solid rgba(59, 130, 246, 0.2) !important;
+  transition: all 0.3s ease !important;
+  cursor: pointer !important;
+  position: relative !important;
+}
+
+/* ✅ Survol des labels - Thème bleu */
+#rinks-modal label:hover {
+  background: rgba(59, 130, 246, 0.1) !important;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2) !important;
+  border-color: rgba(59, 130, 246, 0.4) !important;
+}
+
+/* ✅ Style du texte quand coché */
+#rinks-modal input[type="checkbox"]:checked + span {
+  color: #3b82f6 !important;
+  font-weight: 600 !important;
+}
+
+/* ✅ Style du texte des patinoires */
+#rinks-modal label span {
+  font-size: 14px !important;
+  color: #374151 !important;
+  transition: all 0.2s ease !important;
+}
+
+/* ✅ Focus pour l'accessibilité */
+#rinks-modal input[type="checkbox"]:focus {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3) !important;
+  z-index: 5 !important;
+}
+
+
+/* ✅ NOUVEAU CSS POUR LA CHECKLIST DYNAMIQUE */
+
+/* Animation d'apparition des items */
+.checklist-item-dynamic {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid transparent;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 100%);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.1);
+}
+
+.checklist-item-dynamic:hover {
+    border-color: rgba(59, 130, 246, 0.3);
+    box-shadow: 0 8px 30px rgba(59, 130, 246, 0.2);
+    transform: translateY(-4px);
+}
+
+/* Items visitées */
+.checklist-item-dynamic.checked {
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    border-color: rgba(34, 197, 94, 0.3);
+    opacity: 0.9;
+}
+
+/* Cercle de validation */
+.check-circle-dynamic {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.check-circle-dynamic:hover {
+    transform: scale(1.05);
+}
+
+/* Badge de points */
+.points-badge-dynamic {
+    background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+    animation: glow 2s ease-in-out infinite alternate;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: bold;
+}
+
+/* Animation des points gagnés */
+@keyframes pointsEarned {
+    0% { 
+        transform: scale(1) translateY(0); 
+        opacity: 1; 
+    }
+    50% { 
+        transform: scale(1.5) translateY(-20px); 
+        opacity: 1; 
+    }
+    100% { 
+        transform: scale(1) translateY(-40px); 
+        opacity: 0; 
+    }
+}
+
+/* Indicateur de distance */
+.distance-indicator {
+    background: rgba(59, 130, 246, 0.1);
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+/* Compteur de points animé */
+.updated {
+    animation: pointsUpdate 0.8s ease-out;
+}
+
+@keyframes pointsUpdate {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); color: #f59e0b; }
+    100% { transform: scale(1); }
+}
+
+/* Styles pour le sélecteur de ville */
+.city-btn {
+    transition: all 0.2s ease;
+}
+
+.city-btn:hover {
+    background: rgba(59, 130, 246, 0.1);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .checklist-item-dynamic {
+        padding: 1.25rem;
+    }
+    
+    .check-circle-dynamic {
+        margin-right: 1rem;
+    }
+    
+    .city-btn {
+        padding: 1rem;
+        font-size: 0.875rem;
+    }
+}
+
+
+/* ✅ ANIMATION OPTIMISÉE CHECKLIST DYNAMIQUE */
+.checklist-item-dynamic {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.checklist-item-dynamic:hover .check-circle-dynamic {
+    transform: scale(1.05);
+    transition: transform 0.1s ease-out;
+}
+
+.checklist-item-dynamic.checked {
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%) !important;
+    border-color: rgba(34, 197, 94, 0.3) !important;
+    transition: all 0.2s ease-out !important;
+}
+
+/* Animation des points encore plus rapide */
+@keyframes pointsEarned {
+    0% {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.3) translateY(-15px);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(0.8) translateY(-30px);
+        opacity: 0;
+    }
+}
+
+/* Cercle de validation ultra-fluide */
+.check-circle-dynamic {
+    transition: all 0.1s cubic-bezier(0.68, -0.55, 0.265, 1.55) !important;
+}
+
+.check-circle-dynamic:active {
+    transform: scale(0.95);
+}
+
+
+/* ✅ STYLES POUR LES SECTIONS SÉPARÉES */
+.section-header {
+    border-bottom: 2px solid rgba(59, 130, 246, 0.1);
+    padding-bottom: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.section-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.2), transparent);
+    margin: 2rem 0;
+}
+
+/* Animation spéciale pour les sections */
+.section-appear {
+    animation: sectionFadeIn 0.6s ease-out;
+}
+
+@keyframes sectionFadeIn {
+    from { 
+        opacity: 0; 
+        transform: translateY(30px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
+
+/* Badge de compteur */
+.section-badge {
+    background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+    color: white;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    min-width: 1.5rem;
+    text-align: center;
+}
+
+.section-badge.visited {
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+}
