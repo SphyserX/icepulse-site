@@ -1069,3 +1069,59 @@ body
 .section-badge.visited {
     background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
 }
+
+/* ✅ SOLUTION ANTI-FLASH : Masquer le contenu par défaut */
+.auth-loading {
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.auth-verified {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Loader d'authentification */
+.auth-loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #e0f7ff 0%, #f0f9ff 50%, #e6f3ff 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition: all 0.5s ease;
+}
+
+.auth-loader.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.auth-loader-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid rgba(59, 130, 246, 0.3);
+    border-left-color: #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.auth-loader-text {
+    margin-top: 1rem;
+    color: #3b82f6;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
