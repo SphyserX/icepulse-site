@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CHECKICE - Découvrez les patinoires de France</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/leaflet.js"></script>
@@ -28,7 +29,27 @@
         }, 1000);
     });
     </script>
-
+    <script type="module">
+        import { auth } from "./firebase.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+        
+        // Vérification immédiate
+        const checkAuth = () => {
+            onAuthStateChanged(auth, (user) => {
+                if (!user) {
+                    // Redirection immédiate sans attendre le chargement complet
+                    window.location.replace("login.html");
+                }
+            });
+        };
+        
+        // Exécuter dès que possible
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', checkAuth);
+        } else {
+            checkAuth();
+        }
+    </script>
 <!-- Code injected by Five-server -->
   <script async data-id="five-server" data-file="c:\Users\Mathieu\CHECKICE\index.html" type="application/javascript" src="/fiveserver.js"></script>
   </head>
