@@ -2,17 +2,26 @@
 import { db, auth } from "./firebase.js";
 import { doc, getDoc, setDoc, updateDoc, collection, getDocs, addDoc, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 import { onAuthStateChanged, signOut, updateEmail, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+import { onSnapshot } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 // Variable globale pour gérer les event listeners des checkboxes
 let rinkCheckboxListeners = [];
 
 // Attendre que le DOM soit chargé
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Initialisation de l\'application...');
+    console.log('Initialisation de l\'application...');
     initializeProfile();
     createTopHeaderMenus();
-    displayEvents(); // ✨ AJOUTER CETTE LIGNE
+    displayEvents();
+    
+    // NOUVEAU : Initialiser la géolocalisation après un délai
+    setTimeout(() => {
+        if (window.locationManager) {
+            window.locationManager.init();
+        }
+    }, 2000); // 2 secondes pour laisser le temps à tout de se charger
 });
+
 
 function initializeProfile() {
     console.log('🔧 Initialisation du profil...');
@@ -83,10 +92,15 @@ function initializeProfile() {
         if (user) {
             window.currentUser = user;
             await loadUserProfile(user);
-    
-            // ✅ Appel async pour Custom Claims
             await createEventAdminPanel();
-    
+            
+            // ✅ AJOUTER CETTE LIGNE
+            await updateHeaderLevelDisplay();
+            cleanupDuplicateLevelButtons();
+
+            
+            // ✅ ÉCOUTER LES CHANGEMENTS DE POINTS
+            setupPointsListener();
         } else {
             window.location.href = "login.html";
         }
@@ -94,59 +108,105 @@ function initializeProfile() {
 
 
 
+
 }
 
-// MODIFIÉ : Créer les boutons dans le header avec des modales
-function createTopHeaderMenus() {
-    console.log('🔧 Création des boutons header...');
+function setupPointsListener() {
+    const user = auth.currentUser;
+    if (!user) return;
     
-    // Chercher le conteneur header
-    let headerContainer = document.querySelector('.flex.items-center.space-x-4');
-    if (!headerContainer) {
-        headerContainer = document.querySelector('header .flex');
-        if (!headerContainer) {
-            console.warn("⚠️ Conteneur header non trouvé, création d'un conteneur");
-            const header = document.querySelector('header') || document.body;
-            headerContainer = document.createElement('div');
-            headerContainer.className = 'flex items-center space-x-4';
-            headerContainer.style.position = 'absolute';
-            headerContainer.style.top = '20px';
-            headerContainer.style.right = '20px';
-            headerContainer.style.zIndex = '1000';
-            header.appendChild(headerContainer);
+    const userDocRef = doc(db, "users", user.uid);
+    onSnapshot(userDocRef, (doc) => {
+        if (doc.exists()) {
+            console.log("🔄 Points modifiés, mise à jour du header...");
+            updateHeaderLevelDisplay(); // Ceci va appeler updatePointsDisplay aussi
+            
+            // ✅ Animation sur le bouton points
+            const pointsButton = document.getElementById('header-points-button');
+            if (pointsButton) {
+                pointsButton.classList.add('points-updated');
+                setTimeout(() => {
+                    pointsButton.classList.remove('points-updated');
+                }, 1000);
+            }
         }
-    }
-    console.log('✅ Conteneur header trouvé');
-
-    // Supprimer les anciens boutons s'ils existent
-    const existingRinksBtn = document.getElementById('header-rinks-button');
-    const existingMovesBtn = document.getElementById('header-moves-button');
-    if (existingRinksBtn) existingRinksBtn.remove();
-    if (existingMovesBtn) existingMovesBtn.remove();
-
-    // Créer les boutons "Mes Patinoires" et "Mes Déplacements"
-    const rinksButton = document.createElement('button');
-    rinksButton.id = 'header-rinks-button';
-    rinksButton.textContent = 'Mes Patinoires';
-    rinksButton.className = 'ice-button px-4 py-2 rounded-xl text-white font-semibold';
-
-    const movesButton = document.createElement('button');
-    movesButton.id = 'header-moves-button';
-    movesButton.textContent = 'Mes Déplacements';
-    movesButton.className = 'ice-button px-4 py-2 rounded-xl text-white font-semibold ml-3';
-
-    // Ajouter au header
-    headerContainer.appendChild(rinksButton);
-    headerContainer.appendChild(movesButton);
-    console.log('✅ Boutons ajoutés au header');
-
-    // Créer les modales
-    createRinksModal();
-    createMovesModal();
-
-    // Configurer les événements
-    setupHeaderEvents();
+    });
 }
+
+
+
+// Crée les boutons “Mes Patinoires” et “Mes Déplacements” et les range
+function createTopHeaderMenus(){
+  console.log('🔧 Création des boutons header');
+
+  /* 1️⃣ Trouver (ou créer) le conteneur du header */
+  let headerButtons = document.getElementById('dynamic-header-buttons');
+  if(!headerButtons){
+      headerButtons = document.createElement('div');
+      headerButtons.id = 'dynamic-header-buttons';
+      headerButtons.className = 'header-buttons';
+
+      /* On l’insère juste avant le bouton de notifications s’il existe,
+         sinon on le met à la fin du premier header rencontré. */
+      const notif = document.getElementById('notification-button');
+      if(notif && notif.parentElement){
+          notif.parentElement.parentElement.insertBefore(headerButtons, notif.parentElement);
+      }else{
+          const firstHeader = document.querySelector('header, .header-container, body');
+          firstHeader.prepend(headerButtons);
+      }
+  }
+
+  /* 2️⃣ Nettoyer d’anciens doublons */
+  ['header-rinks-button','header-moves-button']
+       .forEach(id=>{ const old=document.getElementById(id); if(old) old.remove(); });
+
+    /* 3️⃣ Créer les deux boutons */
+    const rinksBtn = document.createElement('button');
+    rinksBtn.id = 'header-rinks-button';
+    rinksBtn.className = 'ice-button';
+
+    // Styles inline pour un bouton carré flexible adapté aux layouts responsive
+    rinksBtn.style.width = '3rem';      // équivaut environ à 48px, facilement scalable
+    rinksBtn.style.height = '3rem';
+    rinksBtn.style.padding = '0';       // enlever padding pour que SVG remplisse bien
+    rinksBtn.style.display = 'flex';
+    rinksBtn.style.alignItems = 'center';
+    rinksBtn.style.justifyContent = 'center';
+
+    rinksBtn.innerHTML = `
+    <svg viewBox="0 0 64 64" fill="white" xmlns="http://www.w3.org/2000/svg"
+        style="width: 55%; height: 55%; display: block;">
+        <path d="M32 12l22 22h-6v18h-12v-12h-8v12h-12v-18h-6z"/>
+    </svg>
+    `;
+    rinksBtn.title = "Cliquez pour choisir vos patinoires préférées";
+rinksBtn.setAttribute('aria-label', 'Choisir mes patinoires préférées'); // pour accessibilité
+
+// Option texte court à côté, si voulue
+// rinksBtn.innerHTML = svgIcon + '<span style="margin-left: 6px;">Mes Patinoires</span>';
+
+
+    const movesBtn = document.createElement('button');
+    movesBtn.id = 'header-moves-button';
+    movesBtn.textContent = 'Mes Déplacements';
+    movesBtn.className = 'ice-button';
+
+
+
+  /* 4️⃣ Les insérer */
+  headerButtons.appendChild(rinksBtn);
+  headerButtons.appendChild(movesBtn);
+
+  /* 5️⃣ Créer les modales et lier les events */
+  createRinksModal();
+  createMovesModal();
+  setupHeaderEvents();
+
+  console.log('✅ Boutons header prêts');
+}
+
+
 
 // CORRECTION : Créer la modale "Mes Patinoires" avec contenu HTML complet
 function createRinksModal() {
@@ -1688,3 +1748,176 @@ function formatDateForAdmin(date, time) {
   };
   return eventDate.toLocaleDateString('fr-FR', options);
 }
+
+// ✅ FONCTION CORRIGÉE - TROUVE L'EXISTANT AU LIEU DE CRÉER
+function findOrCreateLevelButton() {
+    // ✨ CHERCHER L'ANCIEN BOUTON (plusieurs possibilités d'ID/classe)
+    let levelButton = document.querySelector('.level-progress-button') || 
+                      document.querySelector('.level-progress-button-compact') ||
+                      document.getElementById('header-level-button') ||
+                      document.querySelector('[class*="level"]') ||
+                      document.querySelector('[id*="level"]');
+    
+    if (!levelButton) {
+        console.log('❌ Aucun bouton niveau trouvé, création...');
+        // Créer seulement si vraiment aucun n'existe
+        levelButton = document.createElement('div');
+        levelButton.className = 'level-progress-button-compact';
+        
+        // L'insérer au bon endroit (avant les boutons dynamiques)
+        const headerButtons = document.getElementById('dynamic-header-buttons');
+        if (headerButtons && headerButtons.parentElement) {
+            headerButtons.parentElement.insertBefore(levelButton, headerButtons);
+        }
+    } else {
+        console.log('✅ Bouton niveau existant trouvé, mise à jour...');
+        // S'assurer qu'il a la bonne classe
+        levelButton.className = 'level-progress-button-compact';
+    }
+    
+    return levelButton;
+}
+
+
+
+// ✅ FONCTION POUR METTRE À JOUR L'AFFICHAGE DU NIVEAU
+async function updateHeaderLevelDisplay() {
+    const user = auth.currentUser;
+    if (!user) return;
+    
+    try {
+        // Récupérer les données utilisateur
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        const userData = userDoc.exists() ? userDoc.data() : {};
+        const points = userData.points || 0;
+        
+        // Utiliser les LEVELS d'app.js (à importer)
+        const LEVELS = [
+            { level: 1, name: "Débutant sur glace", minPoints: 0, maxPoints: 99, badge: "🥶" },
+            { level: 2, name: "Patineur Amateur", minPoints: 100, maxPoints: 299, badge: "⛸️" },
+            { level: 3, name: "Explorateur Glacé", minPoints: 300, maxPoints: 599, badge: "🗺️" },
+            { level: 4, name: "Collectionneur", minPoints: 600, maxPoints: 999, badge: "🏆" },
+            { level: 5, name: "Maître des Patinoires", minPoints: 1000, maxPoints: 1999, badge: "👑" },
+            { level: 6, name: "Légende des Glaces", minPoints: 2000, maxPoints: 9999, badge: "🌟" }
+        ];
+        
+        // Calculer le niveau actuel
+        let currentLevel = LEVELS[0];
+        for (let i = LEVELS.length - 1; i >= 0; i--) {
+            if (points >= LEVELS[i].minPoints) {
+                currentLevel = LEVELS[i];
+                break;
+            }
+        }
+        
+        // Calculer la progression
+        const nextLevel = LEVELS.find(level => level.level === currentLevel.level + 1);
+        let progressPercent = 100;
+        let progressText = `${points} pts`;
+        
+        if (nextLevel) {
+            const pointsInCurrentLevel = points - currentLevel.minPoints;
+            const totalPointsNeededForNextLevel = nextLevel.minPoints - currentLevel.minPoints;
+            progressPercent = Math.floor((pointsInCurrentLevel / totalPointsNeededForNextLevel) * 100);
+            progressText = `${pointsInCurrentLevel}/${totalPointsNeededForNextLevel}`;
+        }
+        
+        // Créer/Mettre à jour le bouton
+        const levelButton = findOrCreateLevelButton();
+        levelButton.innerHTML = `
+            <div class="level-info">
+                <div class="level-emoji">${currentLevel.badge}</div>
+                <div class="level-name">${currentLevel.name}</div>
+            </div>
+            <div class="progress-container-compact">
+                <div class="progress-bar-container-compact">
+                    <div class="progress-bar" style="width: ${progressPercent}%"></div>
+                </div>
+                <div class="progress-text-centered">${progressText}</div>
+            </div>
+        `;
+        
+        console.log(`🎮 Niveau mis à jour: ${currentLevel.name} - ${points} points - ${progressPercent}%`);
+        await updatePointsDisplay();
+        
+    } catch (error) {
+        console.error("❌ Erreur mise à jour niveau header:", error);
+    }
+}
+
+// ✅ FONCTION DE NETTOYAGE - À EXÉCUTER UNE FOIS
+function cleanupDuplicateLevelButtons() {
+    const levelButtons = document.querySelectorAll('[class*="level-progress"], [class*="level"], [id*="level"]');
+    console.log(`🧹 Trouvé ${levelButtons.length} boutons niveau`);
+    
+    if (levelButtons.length > 1) {
+        // Garder le premier, supprimer les autres
+        for (let i = 1; i < levelButtons.length; i++) {
+            console.log(`🗑️ Suppression du doublon ${i}`);
+            levelButtons[i].remove();
+        }
+    }
+}
+
+// ✅ FONCTION POUR CRÉER/METTRE À JOUR LE BOUTON POINTS
+function createPointsButton() {
+    let pointsButton = document.getElementById('header-points-button');
+    
+    if (!pointsButton) {
+        console.log('🆕 Création du bouton points...');
+        // Créer le bouton s'il n'existe pas
+        pointsButton = document.createElement('div');
+        pointsButton.id = 'header-points-button';
+        pointsButton.className = 'points-display-button';
+        
+        // L'insérer à côté du bouton de niveau
+        const levelButton = findOrCreateLevelButton();
+        if (levelButton && levelButton.parentElement) {
+            // Insérer après le bouton de niveau
+            levelButton.parentElement.insertBefore(pointsButton, levelButton.nextSibling);
+        } else {
+            // Plan B : l'insérer dans le header
+            const headerButtons = document.getElementById('dynamic-header-buttons');
+            if (headerButtons) {
+                headerButtons.appendChild(pointsButton);
+            }
+        }
+    }
+    
+    return pointsButton;
+}
+
+// ✅ FONCTION POUR METTRE À JOUR L'AFFICHAGE DES POINTS
+async function updatePointsDisplay() {
+    const user = auth.currentUser;
+    if (!user) return;
+    
+    try {
+        console.log('⭐ Mise à jour du bouton points...');
+        
+        // Récupérer les points de l'utilisateur
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        const userData = userDoc.exists() ? userDoc.data() : {};
+        const points = userData.points || 0;
+        
+        // Formater les points avec séparateur de milliers
+        const formattedPoints = points.toLocaleString('fr-FR');
+        
+        // Créer/Mettre à jour le bouton
+        const pointsButton = createPointsButton();
+        pointsButton.innerHTML = `
+            <div class="points-icon">⭐</div>
+            <div class="points-info">
+                <div class="points-label">Points</div>
+                <div class="points-value">${formattedPoints}</div>
+            </div>
+        `;
+        
+        console.log(`⭐ Points affichés: ${formattedPoints}`);
+        
+    } catch (error) {
+        console.error("❌ Erreur mise à jour points:", error);
+    }
+}
+
+

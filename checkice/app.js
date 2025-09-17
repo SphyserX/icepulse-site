@@ -1,905 +1,860 @@
-// app.js
-import { db, auth } from "./firebase.js";
-import { 
-    collection, 
-    addDoc, 
-    getDocs, 
-    doc, 
-    updateDoc, 
-    getDoc,
-    setDoc,
-    query,
-    where,
-    arrayUnion,
-    arrayRemove,
-    orderBy
-} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+// map.js - VERSION COMPLÈTE AVEC CORRECTION HORAIRES + DEBUG + SYNCHRONISATION CHECKLIST
+import { db } from './firebase.js';
+import { collection, getDocs, query, where, addDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
-class CheckIceApp {
-    constructor() {
-        this.currentUser = null;
-        this.currentTab = 'map';
-        this.userStats = {
-            points: 0,
-            level: 1,
-            visitedRinks: 0,
-            friends: 0
-        };
-        
-        this.userPosition = null;
-        this.nearbyRinks = [];
-        this.allRinks = [];
-        this.isGeolocationEnabled = false;
-        this.isLoadingChecklist = false;
-        
-        this.init();
+let map;
+let markers = [];
+let isInitialized = false;
+let initInProgress = false;
+
+export async function initializeMap() {
+    if (initInProgress) {
+        console.log("Initialisation en cours, abandon...");
+        return;
     }
 
-    async init() {
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => this.setupApp());
-        } else {
-            this.setupApp();
+    if (isInitialized && map) {
+        console.log("Carte déjà initialisée, refresh des données...");
+        loadRinksDirectlyFromFirebase(); // ← CORRECTION: chargement direct
+        return;
+    }
+
+    initInProgress = true;
+
+    try {
+        console.log("🗺️ Initialisation carte Firebase");
+
+        // Vérifier que Leaflet est disponible
+        if (typeof L === 'undefined') {
+            throw new Error('Leaflet non chargé');
         }
-    }
 
-    setupApp() {
-        this.setupTabs();
-        this.setupChecklist();
-        this.setupNotifications();
-        this.setupPointsSystem();
-        this.setupGeolocation();
-        
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                this.currentUser = user;
-                this.loadUserData();
-            } else {
-                window.location.href = "/checkice/login.html";
+        const mapContainer = document.getElementById('map');
+        if (!mapContainer) {
+            throw new Error('Élément #map introuvable');
+        }
+
+        // Nettoyer le conteneur
+        mapContainer.innerHTML = '';
+        if (map) {
+            map.remove();
+            map = null;
+        }
+
+        // Créer la carte
+        map = L.map('map').setView([46.603354, 1.888334], 6);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        isInitialized = true;
+        console.log("✅ Carte créée avec succès");
+
+        // Event listener pour charger les notes moyennes
+        map.on('popupopen', (e) => {
+            const html = e.popup.getContent();
+            const m = html.match(/avg-rating-([A-Za-z0-9]+)/);
+            if (m && m[1]) {
+                setTimeout(() => loadAverageRating(m[1]), 100);
             }
         });
-    }
 
-    // === GESTION DES ONGLETS ===
-    setupTabs() {
-        const tabButtons = document.querySelectorAll('.tab-button');
-        const contentSections = document.querySelectorAll('.content-section');
+        // Charger les patinoires après un délai - NOUVELLE APPROCHE
+        setTimeout(loadRinksDirectlyFromFirebase, 2000);
 
-        tabButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const targetTab = button.getAttribute('data-tab');
-                this.switchTab(targetTab, tabButtons, contentSections);
-            });
-        });
-    }
-
-    switchTab(targetTab, tabButtons, contentSections) {
-        tabButtons.forEach(btn => btn.classList.remove('tab-active'));
-        contentSections.forEach(section => section.classList.remove('active'));
-
-        const activeButton = document.querySelector(`[data-tab="${targetTab}"]`);
-        const activeSection = document.getElementById(`${targetTab}-section`);
-
-        if (activeButton && activeSection) {
-            activeButton.classList.add('tab-active');
-            activeSection.classList.add('active');
-            this.currentTab = targetTab;
-        }
-    }
-
-    setupChecklist() {
-        console.log('🔧 DEBUG: setupChecklist() - Configuration des événements');
+    } catch (error) {
+        console.error("❌ Erreur création carte:", error);
         
-        document.addEventListener('click', (e) => {
-            if (e.target.closest('.check-circle') || e.target.closest('.check-circle-dynamic')) {
-                const checklistItem = e.target.closest('.checklist-item') || e.target.closest('.checklist-item-dynamic');
-                if (checklistItem) {
-                    const rinkId = checklistItem.getAttribute('data-rink-id');
-                    if (rinkId) {
-                        const rink = this.nearbyRinks.find(r => r.id === rinkId);
-                        if (rink) {
-                            this.toggleEnhancedChecklistItem(rink, checklistItem);
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    async loadChecklist() {
-        console.log('🔍 DEBUG: Début loadChecklist()');
-        
-        if (!this.currentUser) {
-            console.log('❌ DEBUG: Pas d\'utilisateur connecté');
-            return;
-        }
-
-        if (this.isLoadingChecklist) {
-            console.log('⚠️ DEBUG: Chargement déjà en cours, ignoré');
-            return;
-        }
-        this.isLoadingChecklist = true;
-        
-        console.log('✅ DEBUG: Utilisateur connecté:', this.currentUser.uid);
-
-        try {
-            const checklistContainer = document.querySelector('#check-section .space-y-4');
-            console.log('📦 DEBUG: Container checklist trouvé:', !!checklistContainer);
-            
-            if (!checklistContainer) {
-                console.log('❌ DEBUG: Container checklist introuvable !');
-                return;
-            }
-
-            this.showLoadingMessage(checklistContainer);
-
-            console.log('🔄 DEBUG: Chargement des patinoires depuis Firebase...');
-            await this.loadAllRinksFromFirebase();
-            
-            if (this.nearbyRinks.length === 0) {
-                console.log('⚠️ DEBUG: Aucune patinoire trouvée dans Firebase');
-                this.showNoRinksMessage(checklistContainer);
-                return;
-            }
-
-            console.log(`📊 DEBUG: ${this.nearbyRinks.length} patinoires chargées depuis Firebase`);
-
-            // Charger les données utilisateur
-            const userDoc = await getDoc(doc(db, "users", this.currentUser.uid));
-            const userData = userDoc.exists() ? userDoc.data() : {};
-            const visitedRinks = userData.visitedRinks || [];
-            
-            console.log(`📊 DEBUG: Patinoires visitées: ${visitedRinks.length}`);
-
-            this.userStats.points = userData.points || 0;
-            this.userStats.level = userData.level || 1;
-            this.userStats.visitedRinks = visitedRinks.length;
-
-            // Marquer les patinoires visitées
-            this.nearbyRinks.forEach(rink => {
-                rink.visited = visitedRinks.includes(rink.id);
-            });
-
-            const sortedRinks = this.sortRinksBySections(this.nearbyRinks);
-            
-            console.log(`📊 DEBUG: Patinoires à afficher: ${sortedRinks.length}`);
-            console.log('📊 DEBUG: Détail des patinoires:', sortedRinks.map(r => `${r.name} (${r.visited ? 'visitée' : 'à découvrir'})`));
-
-            this.displayDynamicChecklist(sortedRinks);
-            this.updateStatsDisplay();
-            
-            console.log('✅ DEBUG: loadChecklist() terminé');
-            
-        } catch (error) {
-            console.error('❌ DEBUG: Erreur dans loadChecklist():', error);
-            const checklistContainer = document.querySelector('#check-section .space-y-4');
-            if (checklistContainer) {
-                this.showErrorMessage(checklistContainer, error.message);
-            }
-        } finally {
-            this.isLoadingChecklist = false;
-        }
-    }
-
-    showLoadingMessage(container) {
-        const header = container.querySelector('h2');
-        container.innerHTML = '';
-        if (header) container.appendChild(header);
-        
-        const loadingDiv = document.createElement('div');
-        loadingDiv.className = 'text-center py-8';
-        loadingDiv.innerHTML = `
-            <div class="inline-flex items-center space-x-3">
-                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-                <span class="text-blue-600 font-medium">Chargement des patinoires depuis Firebase...</span>
-            </div>
-        `;
-        container.appendChild(loadingDiv);
-    }
-
-    showNoRinksMessage(container) {
-        const header = container.querySelector('h2');
-        container.innerHTML = '';
-        if (header) container.appendChild(header);
-        
-        const noRinksDiv = document.createElement('div');
-        noRinksDiv.className = 'text-center py-12';
-        noRinksDiv.innerHTML = `
-            <div class="text-gray-500">
-                <div class="text-6xl mb-4">🏒</div>
-                <h3 class="text-xl font-semibold mb-2">Aucune patinoire disponible</h3>
-                <p class="text-sm">Les patinoires seront ajoutées dans la base de données Firebase.</p>
-                <button onclick="window.checkIceApp.loadChecklist()" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                    🔄 Actualiser
-                </button>
-            </div>
-        `;
-        container.appendChild(noRinksDiv);
-    }
-
-    showErrorMessage(container, errorMsg) {
-        const header = container.querySelector('h2');
-        container.innerHTML = '';
-        if (header) container.appendChild(header);
-        
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'text-center py-12';
-        errorDiv.innerHTML = `
-            <div class="text-red-500">
-                <div class="text-4xl mb-4">⚠️</div>
-                <h3 class="text-xl font-semibold mb-2">Erreur de chargement</h3>
-                <p class="text-sm mb-4">${errorMsg}</p>
-                <button onclick="window.checkIceApp.loadChecklist()" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
-                    🔄 Réessayer
-                </button>
-            </div>
-        `;
-        container.appendChild(errorDiv);
-    }
-
-    async loadAllRinksFromFirebase() {
-        console.log('🔄 Chargement dynamique des patinoires depuis Firebase...');
-        
-        try {
-            const rinksCollection = collection(db, "rinks");
-            const rinksSnapshot = await getDocs(rinksCollection);
-            
-            this.allRinks = [];
-            this.nearbyRinks = [];
-            
-            if (rinksSnapshot.empty) {
-                console.log('📭 Collection "rinks" vide dans Firebase');
-                return;
-            }
-            
-            rinksSnapshot.forEach((doc) => {
-                const rinkData = doc.data();
-                console.log(`📍 Patinoire trouvée: ${rinkData.name || 'Sans nom'}`);
-                
-                if (rinkData.name) {
-                    let lat = 0, lng = 0;
-                    
-                    if (rinkData.coordinates && Array.isArray(rinkData.coordinates)) {
-                        lat = parseFloat(rinkData.coordinates[0]) || 0;
-                        lng = parseFloat(rinkData.coordinates[1]) || 0;
-                    } else if (rinkData.lat && rinkData.lng) {
-                        lat = parseFloat(rinkData.lat) || 0;
-                        lng = parseFloat(rinkData.lng) || 0;
-                    } else if (rinkData.latitude && rinkData.longitude) {
-                        lat = parseFloat(rinkData.latitude) || 0;
-                        lng = parseFloat(rinkData.longitude) || 0;
-                    }
-                    
-                    const rink = {
-                        id: doc.id,
-                        name: rinkData.name,
-                        city: rinkData.city || rinkData.ville || 'Ville inconnue',
-                        address: rinkData.address || rinkData.adresse || '',
-                        lat: lat,
-                        lng: lng,
-                        visited: false,
-                        status: rinkData.status || 'Inconnue',
-                        ice_quality: rinkData.ice_quality || '',
-                        phone: rinkData.phone || '',
-                        website: rinkData.website || ''
-                    };
-                    
-                    this.allRinks.push(rink);
-                    console.log(`✅ Patinoire ajoutée: ${rink.name} (${lat}, ${lng})`);
-                }
-            });
-            
-            console.log(`✅ ${this.allRinks.length} patinoires chargées depuis Firebase`);
-            
-            if (this.isGeolocationEnabled && this.userPosition) {
-                await this.calculateDistances();
-            } else {
-                this.nearbyRinks = [...this.allRinks];
-            }
-            
-        } catch (error) {
-            console.error('❌ Erreur lors du chargement depuis Firebase:', error);
-            throw error;
-        }
-    }
-
-    sortRinksBySections(rinks) {
-        console.log('🔤 DEBUG: Tri alphabétique par sections');
-        
-        if (!rinks || !Array.isArray(rinks) || rinks.length === 0) {
-            console.log('⚠️ DEBUG: Liste de patinoires vide ou invalide');
-            return [];
-        }
-        
-        const unvisited = rinks.filter(rink => !rink.visited);
-        const visited = rinks.filter(rink => rink.visited);
-        
-        const sortAlphabetically = (a, b) => a.name.localeCompare(b.name, 'fr');
-        
-        unvisited.sort(sortAlphabetically);
-        visited.sort(sortAlphabetically);
-        
-        console.log(`📊 Non visitées: ${unvisited.length}, Visitées: ${visited.length}`);
-        
-        return [...unvisited, ...visited];
-    }
-
-    displayDynamicChecklist(rinks) {
-        console.log('🔍 DEBUG: Début displayDynamicChecklist()');
-        console.log(`📊 DEBUG: Nombre de patinoires reçues: ${rinks.length}`);
-        
-        if (!rinks || !Array.isArray(rinks)) {
-            console.error('❌ DEBUG: rinks n\'est pas un tableau valide:', rinks);
-            rinks = [];
-        }
-        
-        const checklistContainer = document.querySelector('#check-section .space-y-4');
-        console.log('📊 DEBUG: Container trouvé:', !!checklistContainer);
-        
-        if (!checklistContainer) {
-            console.log('❌ DEBUG: Container checklist non trouvé !');
-            return;
-        }
-
-        // Garder seulement le header principal
-        const mainHeader = checklistContainer.querySelector('h2');
-        console.log('📊 DEBUG: Header principal trouvé:', !!mainHeader);
-        
-        checklistContainer.innerHTML = '';
-        if (mainHeader) {
-            checklistContainer.appendChild(mainHeader);
-            console.log('✅ DEBUG: Header principal restauré');
-        }
-
-        if (rinks.length === 0) {
-            console.log('⚠️ DEBUG: Aucune patinoire à afficher');
-            this.showNoRinksMessage(checklistContainer);
-            return;
-        }
-
-        // Séparer les patinoires par section
-        const unvisitedRinks = rinks.filter(rink => !rink.visited);
-        const visitedRinks = rinks.filter(rink => rink.visited);
-        
-        console.log(`📊 DEBUG: ${unvisitedRinks.length} à découvrir, ${visitedRinks.length} visitées`);
-
-        // SECTION 1: PATINOIRES À DÉCOUVRIR
-        if (unvisitedRinks.length > 0) {
-            const toVisitSection = document.createElement('div');
-            toVisitSection.className = 'mb-8';
-            
-            const toVisitHeader = document.createElement('div');
-            toVisitHeader.className = 'flex items-center mb-6';
-            toVisitHeader.innerHTML = `
-                <div class="flex items-center space-x-3">
-                    <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
-                        <span class="text-white font-bold text-sm">🎯</span>
+        // Afficher l'erreur à l'utilisateur
+        const mapContainer = document.getElementById('map');
+        if (mapContainer) {
+            mapContainer.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: center; height: 400px; background: #f3f4f6; border-radius: 12px; color: #6b7280;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 24px; margin-bottom: 8px;">🗺️</div>
+                        <div style="font-weight: 600; margin-bottom: 4px;">Erreur de chargement de la carte</div>
+                        <div style="font-size: 14px;">${error.message}</div>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-800">À découvrir</h3>
-                    <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">${unvisitedRinks.length}</span>
                 </div>
             `;
-            
-            toVisitSection.appendChild(toVisitHeader);
-            
-            const toVisitList = document.createElement('div');
-            toVisitList.className = 'space-y-4';
-            
-            unvisitedRinks.forEach((rink, index) => {
-                console.log(`➕ DEBUG: Création item à découvrir ${index + 1}: ${rink.name}`);
-                const checklistItem = this.createEnhancedChecklistItem(rink, index);
-                toVisitList.appendChild(checklistItem);
-            });
-            
-            toVisitSection.appendChild(toVisitList);
-            checklistContainer.appendChild(toVisitSection);
         }
-
-        // SECTION 2: PATINOIRES VISITÉES
-        if (visitedRinks.length > 0) {
-            const visitedSection = document.createElement('div');
-            visitedSection.className = 'mt-8';
-            
-            const visitedHeader = document.createElement('div');
-            visitedHeader.className = 'flex items-center mb-6';
-            visitedHeader.innerHTML = `
-                <div class="flex items-center space-x-3">
-                    <div class="w-8 h-8 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center">
-                        <span class="text-white font-bold text-sm">✓</span>
-                    </div>
-                    <h3 class="text-xl font-bold text-gray-800">Visitées</h3>
-                    <span class="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">${visitedRinks.length}</span>
-                </div>
-            `;
-            
-            visitedSection.appendChild(visitedHeader);
-            
-            const visitedList = document.createElement('div');
-            visitedList.className = 'space-y-4';
-            
-            visitedRinks.forEach((rink, index) => {
-                console.log(`➕ DEBUG: Création item visité ${index + 1}: ${rink.name}`);
-                const checklistItem = this.createEnhancedChecklistItem(rink, index + unvisitedRinks.length);
-                visitedList.appendChild(checklistItem);
-            });
-            
-            visitedSection.appendChild(visitedList);
-            checklistContainer.appendChild(visitedSection);
-        }
-
-        // MESSAGE SI AUCUNE PATINOIRE VISITÉE
-        if (unvisitedRinks.length > 0 && visitedRinks.length === 0) {
-            const encouragementDiv = document.createElement('div');
-            encouragementDiv.className = 'mt-8 text-center py-8 bg-gradient-to-r from-blue-50 to-green-50 rounded-xl border-2 border-dashed border-blue-200';
-            encouragementDiv.innerHTML = `
-                <div class="text-gray-600">
-                    <div class="text-4xl mb-3">🏒</div>
-                    <h4 class="text-lg font-semibold mb-2">Première visite ?</h4>
-                    <p class="text-sm">Cliquez sur une patinoire ci-dessus pour commencer votre collection !</p>
-                </div>
-            `;
-            checklistContainer.appendChild(encouragementDiv);
-        }
-
-        console.log('✅ DEBUG: Sections créées');
-        
-        setTimeout(() => {
-            console.log('🎨 DEBUG: Animation des items');
-            this.animateChecklistItems();
-        }, 100);
-        
-        console.log('✅ DEBUG: displayDynamicChecklist() terminé');
-    }
-
-    createEnhancedChecklistItem(rink, index) {
-        const item = document.createElement('div');
-        item.className = `checklist-item-dynamic rounded-xl p-4 flex items-center transition-all duration-300 ${rink.visited ? 'checked' : ''}`;
-        item.setAttribute('data-rink-id', rink.id);
-        item.setAttribute('data-points', '50');
-        item.style.animationDelay = `${index * 0.1}s`;
-
-        const distanceText = rink.distance && this.isGeolocationEnabled ? 
-            `${rink.distance < 1 ? Math.round(rink.distance * 1000) + 'm' : rink.distance.toFixed(1) + 'km'}` : 
-            '';
-
-        item.innerHTML = `
-            <div class="check-circle-dynamic relative">
-                <div class="w-12 h-12 rounded-full border-3 ${rink.visited ? 'border-green-400 bg-green-50' : 'border-blue-200 bg-white'} flex items-center justify-center cursor-pointer transition-all duration-300 hover:scale-110">
-                    ${rink.visited ? 
-                        '<div class="w-6 h-6 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center text-white text-xs font-bold">✓</div>' :
-                        '<div class="w-6 h-6 border-2 border-gray-300 rounded-full hover:border-blue-400 transition-all duration-300"></div>'
-                    }
-                </div>
-                ${!rink.visited ? `
-                    <div class="absolute -top-2 -right-2 points-badge-dynamic text-xs font-bold px-2 py-1 rounded-full text-white shadow-lg">
-                        +50
-                    </div>
-                ` : ''}
-            </div>
-
-            <div class="flex-1 ml-4">
-                <h3 class="font-semibold text-gray-800 text-lg">${rink.name}</h3>
-                <div class="flex items-center space-x-3 mt-1">
-                    <span class="text-sm font-medium ${rink.visited ? 'text-green-600' : 'text-blue-600'}">
-                        ${rink.visited ? '✓ Visitée' : 'À découvrir'}
-                    </span>
-                    <span class="text-sm text-gray-500">• ${rink.city}</span>
-                    ${distanceText ? `<span class="text-sm text-blue-600 font-medium distance-indicator">📍 ${distanceText}</span>` : ''}
-                </div>
-                ${rink.address ? `<div class="text-xs text-gray-400 mt-1">📍 ${rink.address}</div>` : ''}
-            </div>
-
-            ${rink.visited ? `
-                <div class="flex items-center space-x-2 text-green-600">
-                    <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                        <span class="text-sm font-bold">✓</span>
-                    </div>
-                </div>
-            ` : ''}
-        `;
-
-        return item;
-    }
-
-    // ✅ VERSION SÉCURISÉE avec gestion d'erreurs complète
-    async toggleEnhancedChecklistItem(rink, itemElement) {
-        try {
-            console.log('🎯 Toggle patinoire:', rink.name, 'visitée:', rink.visited);
-            
-            const checkCircle = itemElement.querySelector('.check-circle-dynamic');
-            const pointsBadge = itemElement.querySelector('.points-badge-dynamic');
-            
-            // Animation du clic
-            checkCircle.style.transition = 'all 0.15s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
-            checkCircle.style.transform = 'scale(1.1)';
-            
-            setTimeout(() => {
-                checkCircle.style.transform = 'scale(1)';
-            }, 150);
-
-            if (pointsBadge && !rink.visited) {
-                pointsBadge.style.animation = 'pointsEarned 0.3s ease-out';
-            }
-            
-            const wasVisited = rink.visited;
-            const nowVisited = !wasVisited;
-            
-            console.log(`📝 Changement d'état: ${wasVisited} → ${nowVisited}`);
-            
-            // SAUVEGARDE FIREBASE EN PARALLÈLE
-            const savePromises = [];
-            
-            if (nowVisited) {
-                // Marquer comme visitée
-                savePromises.push(this.markRinkAsVisited(rink.id));
-                savePromises.push(this.updateUserStats(50));
-                this.showNotification(`🎉 +50 points ! ${rink.name} visitée !`, 'success');
-            } else {
-                // Démarquer comme visitée
-                savePromises.push(this.unmarkRinkAsVisited(rink.id));
-                savePromises.push(this.updateUserStats(-50));
-                this.showNotification(`⬅️ -50 points ! ${rink.name} décochée`, 'info');
-            }
-            
-            // ATTENDRE LA SAUVEGARDE AVANT DE CONTINUER
-            await Promise.all(savePromises);
-            
-            // Mettre à jour l'état local seulement APRÈS succès Firebase
-            rink.visited = nowVisited;
-            
-            if (nowVisited) {
-                itemElement.classList.add('checked');
-            } else {
-                itemElement.classList.remove('checked');
-            }
-            
-            // ATTENDRE AVANT RÉORGANISATION
-            setTimeout(async () => {
-                console.log(`🎬 Début réorganisation: ${rink.name}`);
-                
-                itemElement.style.transition = 'opacity 0.3s ease-out, transform 0.3s ease-out';
-                itemElement.style.opacity = '0';
-                itemElement.style.transform = 'translateX(-20px)';
-                
-                setTimeout(() => {
-                    this.reorganizeChecklist();
-                }, 300);
-                
-            }, 500);
-            
-        } catch (error) {
-            console.error('❌ Erreur toggle patinoire:', error);
-            this.showNotification('Erreur lors de la sauvegarde. Veuillez réessayer.', 'error');
-            
-            // ANNULER LES CHANGEMENTS EN CAS D'ERREUR
-            await this.loadChecklist();
-        }
-    }
-
-    // ✅ VERSION CORRIGÉE avec arrayUnion pour éviter les doublons
-    async markRinkAsVisited(rinkId) {
-        const user = this.currentUser;
-        if (!user) {
-            console.error('❌ Utilisateur non connecté');
-            return;
-        }
-
-        try {
-            console.log('💾 Sauvegarde visite patinoire:', rinkId);
-            
-            const userDocRef = doc(db, "users", user.uid);
-            
-            // UTILISER arrayUnion pour éviter les doublons automatiquement
-            await updateDoc(userDocRef, {
-                visitedRinks: arrayUnion(rinkId),
-                lastVisit: new Date().toISOString(),
-                updatedAt: new Date().toISOString()
-            });
-            
-            console.log('✅ Visite sauvegardée avec succès:', rinkId);
-            
-            // VÉRIFICATION : Relire pour confirmer la sauvegarde
-            const updatedDoc = await getDoc(userDocRef);
-            if (updatedDoc.exists()) {
-                const updatedData = updatedDoc.data();
-                console.log('📊 visitedRinks après sauvegarde:', updatedData.visitedRinks || []);
-            }
-            
-        } catch (error) {
-            console.error('❌ Erreur sauvegarde visite:', error);
-            throw error;
-        }
-    }
-
-    // ✅ VERSION CORRIGÉE avec arrayRemove
-    async unmarkRinkAsVisited(rinkId) {
-        const user = this.currentUser;
-        if (!user) {
-            console.error('❌ Utilisateur non connecté');
-            return;
-        }
-
-        try {
-            console.log('🗑️ Suppression visite patinoire:', rinkId);
-            
-            const userDocRef = doc(db, "users", user.uid);
-            
-            // UTILISER arrayRemove pour supprimer
-            await updateDoc(userDocRef, {
-                visitedRinks: arrayRemove(rinkId),
-                lastVisit: new Date().toISOString(),
-                updatedAt: new Date().toISOString()
-            });
-            
-            console.log('✅ Visite supprimée avec succès:', rinkId);
-            
-        } catch (error) {
-            console.error('❌ Erreur suppression visite:', error);
-            throw error;
-        }
-    }
-
-    async reorganizeChecklist() {
-        console.log('🔄 Réorganisation de la checklist...');
-        
-        try {
-            const userDoc = await getDoc(doc(db, "users", this.currentUser.uid));
-            const userData = userDoc.exists() ? userDoc.data() : {};
-            const visitedRinks = userData.visitedRinks || [];
-            
-            this.nearbyRinks.forEach(rink => {
-                rink.visited = visitedRinks.includes(rink.id);
-            });
-
-            const sortedRinks = this.sortRinksBySections(this.nearbyRinks);
-            this.displayDynamicChecklist(sortedRinks);
-            
-            console.log('✅ Réorganisation terminée');
-            
-        } catch (error) {
-            console.error('❌ Erreur réorganisation:', error);
-        }
-    }
-
-    async updateUserStats(pointsChange) {
-        const user = this.currentUser;
-        if (!user) return;
-
-        try {
-            this.userStats.points = Math.max(0, this.userStats.points + pointsChange);
-            this.userStats.level = Math.floor(this.userStats.points / 200) + 1;
-            this.updateStatsDisplay();
-            
-            const userDocRef = doc(db, "users", user.uid);
-            const userSnap = await getDoc(userDocRef);
-            
-            const currentData = userSnap.exists() ? userSnap.data() : {};
-            const newPoints = Math.max(0, (currentData.points || 0) + pointsChange);
-            const newLevel = Math.floor(newPoints / 200) + 1;
-            
-            await updateDoc(userDocRef, {
-                points: newPoints,
-                level: newLevel,
-                updatedAt: new Date().toISOString()
-            });
-            
-            if (newLevel > (currentData.level || 1)) {
-                setTimeout(() => {
-                    this.showNotification(`🎊 Niveau ${newLevel} atteint !`, 'success');
-                }, 500);
-            } else if (newLevel < (currentData.level || 1)) {
-                setTimeout(() => {
-                    this.showNotification(`📉 Niveau ${newLevel}`, 'info');
-                }, 500);
-            }
-            
-        } catch (error) {
-            console.error('❌ Erreur mise à jour stats:', error);
-        }
-    }
-
-    animateChecklistItems() {
-        console.log('🎨 DEBUG: Animation des items');
-        const items = document.querySelectorAll('.checklist-item-dynamic');
-        items.forEach((item, index) => {
-            setTimeout(() => {
-                item.style.opacity = '1';
-                item.style.transform = 'translateY(0)';
-            }, index * 50);
-        });
-    }
-
-    setupGeolocation() {
-        console.log('🔧 Setup géolocalisation...');
-        
-        const geoButton = document.querySelector('#enable-geolocation');
-        if (geoButton) {
-            geoButton.addEventListener('click', () => {
-                this.getUserLocation();
-            });
-        }
-        
-        if (navigator.geolocation) {
-            this.getUserLocation();
-        }
-    }
-
-    async getUserLocation() {
-        console.log('📍 Demande de géolocalisation...');
-        
-        if (!navigator.geolocation) {
-            console.log('❌ Géolocalisation non supportée');
-            return;
-        }
-
-        try {
-            const position = await new Promise((resolve, reject) => {
-                navigator.geolocation.getCurrentPosition(resolve, reject, {
-                    enableHighAccuracy: true,
-                    timeout: 10000,
-                    maximumAge: 300000
-                });
-            });
-
-            this.userPosition = {
-                lat: position.coords.latitude,
-                lng: position.coords.longitude
-            };
-            
-            this.isGeolocationEnabled = true;
-            console.log('✅ Position obtenue:', this.userPosition);
-            
-            if (this.allRinks.length > 0) {
-                await this.calculateDistances();
-                await this.loadChecklist();
-            }
-            
-        } catch (error) {
-            console.error('❌ Erreur géolocalisation:', error);
-            this.isGeolocationEnabled = false;
-        }
-    }
-
-    async calculateDistances() {
-        if (!this.userPosition || this.allRinks.length === 0) return;
-        
-        console.log('📏 Calcul des distances...');
-        
-        this.nearbyRinks = this.allRinks.map(rink => {
-            const distance = this.calculateDistance(
-                this.userPosition.lat,
-                this.userPosition.lng,
-                rink.lat,
-                rink.lng
-            );
-            
-            return {
-                ...rink,
-                distance: distance
-            };
-        });
-        
-        this.nearbyRinks.sort((a, b) => a.distance - b.distance);
-        
-        console.log(`✅ ${this.nearbyRinks.length} patinoires avec distances calculées`);
-    }
-
-    calculateDistance(lat1, lng1, lat2, lng2) {
-        const R = 6371;
-        const dLat = (lat2 - lat1) * Math.PI / 180;
-        const dLng = (lng2 - lng1) * Math.PI / 180;
-        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                Math.sin(dLng/2) * Math.sin(dLng/2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        return R * c;
-    }
-
-    async loadUserData() {
-        console.log('👤 Chargement données utilisateur...');
-        
-        if (!this.currentUser) return;
-        
-        try {
-            const userDocRef = doc(db, "users", this.currentUser.uid);
-            const userSnap = await getDoc(userDocRef);
-            
-            if (userSnap.exists()) {
-                const userData = userSnap.data();
-                this.userStats = {
-                    points: userData.points || 0,
-                    level: userData.level || 1,
-                    visitedRinks: (userData.visitedRinks || []).length,
-                    friends: userData.friends?.length || 0
-                };
-            } else {
-                await setDoc(userDocRef, {
-                    email: this.currentUser.email,
-                    username: '',
-                    points: 0,
-                    level: 1,
-                    visitedRinks: [],
-                    friends: [],
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString()
-                });
-            }
-            
-            this.updateStatsDisplay();
-            await this.loadChecklist();
-            
-        } catch (error) {
-            console.error('❌ Erreur chargement utilisateur:', error);
-        }
-    }
-
-    updateStatsDisplay() {
-        const pointsElement = document.querySelector('#points-counter');
-        const levelElement = document.querySelector('#user-level');
-        const rinksElement = document.querySelector('#visited-rinks-count');
-        
-        if (pointsElement) {
-            pointsElement.textContent = this.userStats.points;
-            pointsElement.classList.add('updated');
-            setTimeout(() => pointsElement.classList.remove('updated'), 800);
-            console.log(`✅ Points mis à jour: ${this.userStats.points}`);
-        } else {
-            console.log('⚠️ Élément #points-counter non trouvé');
-        }
-        
-        if (levelElement) {
-            levelElement.textContent = this.userStats.level;
-        }
-        
-        if (rinksElement) {
-            rinksElement.textContent = this.userStats.visitedRinks;
-        }
-        
-        const progressBar = document.querySelector('#level-progress');
-        if (progressBar) {
-            const currentLevelPoints = (this.userStats.level - 1) * 200;
-            const nextLevelPoints = this.userStats.level * 200;
-            const progress = ((this.userStats.points - currentLevelPoints) / (nextLevelPoints - currentLevelPoints)) * 100;
-            progressBar.style.width = `${Math.min(progress, 100)}%`;
-        }
-    }
-
-    setupNotifications() {
-        console.log('🔔 Setup notifications...');
-    }
-
-    showNotification(message, type = 'info') {
-        const notification = document.createElement('div');
-        notification.className = `fixed top-4 right-4 p-4 rounded-xl text-white font-semibold z-50 ${
-            type === 'success' ? 'bg-green-500' : 
-            type === 'error' ? 'bg-red-500' : 
-            type === 'info' ? 'bg-blue-500' : 'bg-gray-500'
-        }`;
-        notification.textContent = message;
-        notification.style.animation = 'slideInRight 0.3s ease-out';
-        
-        document.body.appendChild(notification);
-        
-        setTimeout(() => {
-            notification.style.animation = 'slideOutRight 0.3s ease-out';
-            setTimeout(() => {
-                if (document.body.contains(notification)) {
-                    document.body.removeChild(notification);
-                }
-            }, 300);
-        }, 3000);
-    }
-
-    setupPointsSystem() {
-        console.log('🎯 Setup système de points...');
-    }
-
-    async addToChecklist(rinkName, city) {
-        console.log(`➕ Ajout à la checklist: ${rinkName}, ${city}`);
+        isInitialized = false;
+    } finally {
+        initInProgress = false;
     }
 }
 
-// Initialiser l'application
-window.checkIceApp = new CheckIceApp();
-export default CheckIceApp;
+// NOUVELLE FONCTION - Charger directement depuis Firebase pour récupérer les horaires
+async function loadRinksDirectlyFromFirebase() {
+    try {
+        console.log("🔧 Chargement DIRECT depuis Firebase pour corriger les horaires...");
+        
+        const querySnapshot = await getDocs(collection(db, 'rinks'));
+        const firebaseRinks = [];
+        
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            console.log('=== DONNÉES FIREBASE DIRECTES ===');
+            console.log('Patinoire:', data.name);
+            console.log('Horaires Firebase:', data.horaires);
+            console.log('Toutes les propriétés Firebase:', Object.keys(data));
+            console.log('================================');
+            firebaseRinks.push(data);
+        });
+        
+        console.log(`📍 ${firebaseRinks.length} patinoires chargées directement depuis Firebase`);
+        
+        // Remplacer les données de checkIceApp si elles existent
+        if (window.checkIceApp) {
+            console.log("🔄 Mise à jour de window.checkIceApp.allRinks avec les vraies données Firebase");
+            window.checkIceApp.allRinks = firebaseRinks;
+        } else {
+            console.log("⚠️ window.checkIceApp introuvable, création...");
+            window.checkIceApp = { allRinks: firebaseRinks };
+        }
+        
+        // Maintenant charger les patinoires avec les bonnes données
+        loadRinksFromData(firebaseRinks);
+        
+        // *** CORRECTION PRINCIPALE *** - Déclencher le rechargement de la checklist
+        console.log('🔄 Déclenchement du rechargement de la checklist...');
+        
+        // Méthode 1: Événement personnalisé
+        window.dispatchEvent(new CustomEvent('checkiceDataReady', {
+            detail: { rinks: firebaseRinks }
+        }));
+        
+        // Méthode 2: Appel direct si la fonction existe
+        setTimeout(() => {
+            if (typeof window.loadChecklist === 'function') {
+                console.log('📋 Rechargement direct de la checklist...');
+                window.loadChecklist();
+            }
+        }, 1000);
+        
+        // Méthode 3: Storage event pour compatibilité
+        localStorage.setItem('checkiceDataUpdated', Date.now().toString());
+        window.dispatchEvent(new StorageEvent('storage', {
+            key: 'checkiceDataUpdated',
+            newValue: Date.now().toString()
+        }));
+        
+    } catch (error) {
+        console.error("❌ Erreur chargement direct Firebase:", error);
+        // Fallback vers checkIceApp si disponible
+        if (window.checkIceApp && window.checkIceApp.allRinks) {
+            console.log("🔄 Fallback vers checkIceApp...");
+            loadRinksFromCheckIceApp();
+        }
+    }
+}
+
+// Charger les patinoires depuis checkIceApp (version originale pour compatibilité)
+async function loadRinksFromCheckIceApp() {
+    try {
+        console.log("🏒 Chargement patinoires depuis checkIceApp...");
+
+        if (!window.checkIceApp || !window.checkIceApp.allRinks) {
+            console.log("checkIceApp pas prêt, tentative directe Firebase...");
+            loadRinksDirectlyFromFirebase();
+            return;
+        }
+
+        const rinks = window.checkIceApp.allRinks;
+        loadRinksFromData(rinks);
+
+    } catch (error) {
+        console.error("❌ Erreur chargement checkIceApp:", error);
+    }
+}
+
+// NOUVELLE FONCTION - Charger les patinoires depuis des données (factorisée)
+function loadRinksFromData(rinks) {
+    try {
+        console.log(`${rinks.length} patinoires disponibles`);
+
+        // **DEBUG - Vérification des données chargées**
+        console.log('=== DEBUG CHARGEMENT PATINOIRES ===');
+        console.log('Toutes les patinoires chargées:', rinks);
+        rinks.forEach((rink, index) => {
+            console.log(`Rink ${index}:`, {
+                name: rink.name,
+                horaires: rink.horaires,
+                hours: rink.hours,
+                schedule: rink.schedule,
+                status: rink.status,
+                allKeys: Object.keys(rink)
+            });
+        });
+        console.log('=====================================');
+
+        // Nettoyer les marqueurs existants
+        markers.forEach(marker => {
+            if (map && map.hasLayer(marker)) {
+                map.removeLayer(marker);
+            }
+        });
+        markers = [];
+
+        let addedCount = 0;
+
+        // Ajouter chaque patinoire
+        rinks.forEach((rink, index) => {
+            let lat, lng;
+
+            // Essayer différents formats de coordonnées
+            if (rink.coordinates && Array.isArray(rink.coordinates) && rink.coordinates.length === 2) {
+                lat = parseFloat(rink.coordinates[0]);
+                lng = parseFloat(rink.coordinates[1]);
+            } else if (rink.lat && rink.lng) {
+                lat = parseFloat(rink.lat);
+                lng = parseFloat(rink.lng);
+            } else if (rink.latitude && rink.longitude) {
+                lat = parseFloat(rink.latitude);
+                lng = parseFloat(rink.longitude);
+            }
+
+            if (!isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) {
+                try {
+                    const marker = L.marker([lat, lng]).addTo(map);
+                    
+                    // Popup compact au thème CHECKICE
+                    marker.bindPopup(createCompactPopup(rink, lat, lng), {
+                        maxWidth: 340,
+                        className: 'checkice-compact-popup'
+                    });
+
+                    markers.push(marker);
+                    addedCount++;
+                } catch (markerError) {
+                    console.error(`Erreur ajout marqueur ${rink.name}:`, markerError);
+                }
+            } else {
+                console.warn(`Coordonnées invalides pour ${rink.name}:`, lat, lng);
+            }
+        });
+
+        console.log(`${addedCount} patinoires affichées sur la carte`);
+
+    } catch (error) {
+        console.error("❌ Erreur chargement données:", error);
+    }
+}
+
+// POPUP COMPACT au thème CHECKICE AVEC CORRECTION HORAIRES
+function createCompactPopup(rink, lat, lng) {
+    // **DEBUG DÉTAILLÉ - Analyse des données**
+    console.log('=== DEBUG HORAIRES POPUP ===');
+    console.log('Données complètes rink:', rink);
+    console.log('rink.horaires:', rink.horaires);
+    console.log('rink.hours:', rink.hours);
+    console.log('rink.schedule:', rink.schedule);
+    console.log('Type de rink.horaires:', typeof rink.horaires);
+    console.log('Valeur exacte rink.horaires:', JSON.stringify(rink.horaires));
+    console.log('Propriétés disponibles:', Object.keys(rink));
+    console.log('============================');
+
+    // Informations essentielles
+    const ville = rink.city || rink.ville || rink.address || 'Ville inconnue';
+    
+    // **VERSION CORRIGÉE ET ROBUSTE pour l'extraction des horaires**
+    let horaires = 'Horaires non disponibles';
+    
+    if (rink.horaires && typeof rink.horaires === 'string' && rink.horaires.trim() !== '') {
+        horaires = rink.horaires;
+    } else if (rink.hours && typeof rink.hours === 'string' && rink.hours.trim() !== '') {
+        horaires = rink.hours;
+    } else if (rink.schedule && typeof rink.schedule === 'string' && rink.schedule.trim() !== '') {
+        horaires = rink.schedule;
+    } else if (rink.openingHours && typeof rink.openingHours === 'string' && rink.openingHours.trim() !== '') {
+        horaires = rink.openingHours;
+    } else if (rink.time_schedule && typeof rink.time_schedule === 'string' && rink.time_schedule.trim() !== '') {
+        horaires = rink.time_schedule;
+    }
+    
+    // **DEBUG FINAL - Vérification de l'extraction**
+    console.log('Horaires extraits FINAUX:', horaires);
+    console.log('Ville extraite:', ville);
+
+    // ID unique pour cette patinoire
+    const rinkId = generateRinkId(rink);
+
+    return `
+        <div class="compact-popup-card">
+            <div class="compact-header">
+                <h3 class="compact-title">${rink.name}</h3>
+            </div>
+            
+            <div class="compact-info-row">
+                <span class="compact-icon">📍</span>
+                <span>${ville}</span>
+            </div>
+            
+            <div class="compact-info-row">
+                <span class="compact-icon">🕒</span>
+                <span>${horaires}</span>
+            </div>
+            
+            <div class="compact-rating">
+                <span class="compact-icon">⭐</span>
+                <span>Note: <span id="avg-rating-${rinkId}">-</span></span>
+            </div>
+            
+            <div class="compact-actions">
+                <button class="compact-btn" onclick="openRinkDetailsModal('${rinkId}')">
+                    Fiche complète
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+// Générer un ID unique basé sur le nom de la patinoire
+function generateRinkId(rink) {
+    return rink.name.replace(/\s+/g, '').replace(/[^a-zA-Z0-9]/g, '');
+}
+
+// Charger la note moyenne pour le popup compact
+async function loadAverageRating(rinkId) {
+    try {
+        const el = document.getElementById(`avg-rating-${rinkId}`);
+        if (!el) return;
+
+        const reviewsCollection = collection(db, 'reviews');
+        const q = query(reviewsCollection, where('rinkId', '==', rinkId));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+            // Utiliser les avis de démonstration pour calculer la moyenne
+            const fakeReviews = getFakeReviewsForRink(rinkId);
+            const avgRating = fakeReviews.reduce((sum, review) => sum + review.rating, 0) / fakeReviews.length;
+            el.textContent = avgRating.toFixed(1);
+            return;
+        }
+
+        let sum = 0, count = 0;
+        querySnapshot.forEach(doc => {
+            const data = doc.data();
+            if (typeof data.rating === 'number') {
+                sum += data.rating;
+                count++;
+            }
+        });
+
+        el.textContent = count ? (sum / count).toFixed(1) : '-';
+
+    } catch (error) {
+        console.error('Erreur moyenne rating:', error);
+        const el = document.getElementById(`avg-rating-${rinkId}`);
+        if (el) el.textContent = '-';
+    }
+}
+
+// Fonction pour charger les avis depuis Firebase avec ta structure
+async function loadReviewsAndRating(rinkId) {
+    try {
+        const reviewsCollection = collection(db, 'reviews');
+        const q = query(reviewsCollection, where('rinkId', '==', rinkId));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+            return { averageRating: null, reviews: [] };
+        }
+
+        let sum = 0;
+        const reviews = [];
+
+        querySnapshot.forEach(doc => {
+            const data = doc.data();
+            
+            // Utiliser ta structure Firebase
+            const review = {
+                comment: data.comment,
+                createdAt: data.createdAt,
+                rating: data.rating,
+                rinkId: data.rinkId,
+                rinkName: data.rinkName,
+                updatedAt: data.updatedAt,
+                userId: data.userId,
+                userName: data.userName
+            };
+
+            if (typeof data.rating === 'number') {
+                sum += data.rating;
+            }
+            reviews.push(review);
+        });
+
+        const averageRating = sum / reviews.length;
+        return { averageRating, reviews };
+
+    } catch (e) {
+        console.error('Erreur chargement reviews:', e);
+        return { averageRating: null, reviews: [] };
+    }
+}
+
+// MODALE FICHE COMPLÈTE MODIFIÉE - Sans coordonnées, statut et date création + Adresse corrigée
+window.openRinkDetailsModal = async function(rinkId) {
+    console.log('Ouverture fiche pour rinkId:', rinkId);
+
+    let rink = null;
+    if (window.checkIceApp && window.checkIceApp.allRinks) {
+        rink = window.checkIceApp.allRinks.find(r => generateRinkId(r) === rinkId);
+    }
+
+    if (!rink) {
+        alert('Patinoire introuvable');
+        return;
+    }
+
+    // **DEBUG - Vérification des données dans la modale**
+    console.log('=== DEBUG MODALE ===');
+    console.log('Données rink trouvées:', rink);
+    console.log('rink.horaires dans modale:', rink.horaires);
+    console.log('rink.adresse dans modale:', rink.adresse); // ← CORRIGÉ: adresse au lieu d'address
+    console.log('Toutes les propriétés:', Object.keys(rink));
+    console.log('====================');
+
+    // Utiliser les coordonnées (pour le bouton itinéraire uniquement)
+    let lat, lng;
+    if (rink.coordinates && Array.isArray(rink.coordinates) && rink.coordinates.length === 2) {
+        lat = parseFloat(rink.coordinates[0]);
+        lng = parseFloat(rink.coordinates[1]);
+    } else if (rink.lat && rink.lng) {
+        lat = parseFloat(rink.lat);
+        lng = parseFloat(rink.lng);
+    } else if (rink.latitude && rink.longitude) {
+        lat = parseFloat(rink.latitude);
+        lng = parseFloat(rink.longitude);
+    }
+
+    // **EXTRACTION ROBUSTE DES HORAIRES POUR LA MODALE**
+    let horairesModale = 'Horaires non disponibles';
+    if (rink.horaires && typeof rink.horaires === 'string' && rink.horaires.trim() !== '') {
+        horairesModale = rink.horaires;
+    } else if (rink.hours && typeof rink.hours === 'string' && rink.hours.trim() !== '') {
+        horairesModale = rink.hours;
+    } else if (rink.schedule && typeof rink.schedule === 'string' && rink.schedule.trim() !== '') {
+        horairesModale = rink.schedule;
+    } else if (rink.openingHours && typeof rink.openingHours === 'string' && rink.openingHours.trim() !== '') {
+        horairesModale = rink.openingHours;
+    }
+
+    // Charger la note moyenne et les avis
+    const { averageRating, reviews } = await loadReviewsAndRating(rinkId);
+
+    // Créer le HTML pour la section avis
+    const reviewsSection = reviews.length > 0 ? `
+        <div class="rink-reviews-section">
+            <h3 style="color: #3b82f6; font-size: 16px; font-weight: 600; margin: 20px 0 12px 0; display: flex; align-items: center; gap: 8px;">
+                💬 Avis des utilisateurs (${reviews.length})
+            </h3>
+            <div style="display: grid; gap: 12px;">
+                ${reviews.map(review => `
+                    <div style="padding: 12px; background: rgba(59,130,246,0.05); border-radius: 12px; border: 1px solid rgba(59,130,246,0.1);">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                            <div style="display: flex; gap: 2px;">
+                                ${[1,2,3,4,5].map(i => `<span style="color: ${i <= review.rating ? '#fbbf24' : '#d1d5db'}; font-size: 14px;">★</span>`).join('')}
+                            </div>
+                            <span style="font-weight: 600; color: #374151; font-size: 13px;">${review.userName || 'Anonyme'}</span>
+                            <span style="font-size: 11px; color: #6b7280;">
+                                ${review.createdAt ? 
+                                    (review.createdAt.seconds ? 
+                                        new Date(review.createdAt.seconds * 1000).toLocaleDateString('fr-FR') : 
+                                        '') : 
+                                    ''}
+                            </span>
+                        </div>
+                        <div style="color: #475569; font-size: 14px; line-height: 1.4;">${review.comment}</div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    ` : `
+        <div class="rink-reviews-section">
+            <h3 style="color: #3b82f6; font-size: 16px; font-weight: 600; margin: 20px 0 12px 0;">💬 Avis des utilisateurs</h3>
+            <p style="color: #6b7280; font-style: italic;">Aucun avis disponible pour cette patinoire.</p>
+        </div>
+    `;
+
+    const modal = document.createElement('div');
+    modal.className = 'rink-details-modal';
+    modal.id = 'rink-details-modal';
+    modal.innerHTML = `
+        <div class="rink-details-content">
+            <div class="rink-details-header">
+                <h2 class="rink-details-title">${rink.name}</h2>
+                <button class="rink-details-close" onclick="closeRinkDetailsModal()">✕</button>
+            </div>
+            
+            <div class="rink-details-info">
+                ${rink.city ? `<div class="rink-info-item">
+                    <span class="rink-info-icon">🏙️</span>
+                    <span class="rink-info-label">Ville :</span>
+                    <span class="rink-info-value">${rink.city}</span>
+                </div>` : ''}
+                
+                ${rink.adresse ? `<div class="rink-info-item">
+                    <span class="rink-info-icon">📍</span>
+                    <span class="rink-info-label">Adresse :</span>
+                    <span class="rink-info-value">${rink.adresse}</span>
+                </div>` : ''}
+                
+                <div class="rink-info-item">
+                    <span class="rink-info-icon">🕒</span>
+                    <span class="rink-info-label">Horaires :</span>
+                    <span class="rink-info-value">${horairesModale}</span>
+                </div>
+                
+                ${rink.phone ? `<div class="rink-info-item">
+                    <span class="rink-info-icon">📞</span>
+                    <span class="rink-info-label">Téléphone :</span>
+                    <span class="rink-info-value">
+                        <a href="tel:${rink.phone}" class="rink-info-link">${rink.phone}</a>
+                    </span>
+                </div>` : ''}
+                
+                ${rink.tarifs || rink.price ? `<div class="rink-info-item">
+                    <span class="rink-info-icon">💰</span>
+                    <span class="rink-info-label">Tarifs :</span>
+                    <span class="rink-info-value">${rink.tarifs || rink.price}</span>
+                </div>` : ''}
+                
+                ${rink.website ? `<div class="rink-info-item">
+                    <span class="rink-info-icon">🌐</span>
+                    <span class="rink-info-label">Site web :</span>
+                    <span class="rink-info-value">
+                        <a href="${rink.website}" target="_blank" class="rink-info-link">${rink.website}</a>
+                    </span>
+                </div>` : ''}
+                
+                <!-- NOTE MOYENNE -->
+                <div class="rink-info-item" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(59,130,246,0.1);">
+                    <span class="rink-info-icon">⭐</span>
+                    <span class="rink-info-label">Note moyenne :</span>
+                    <span class="rink-info-value" style="font-weight: 600; color: #fbbf24;">
+                        ${averageRating ? averageRating.toFixed(1) + '/5' : 'Aucune note'}
+                    </span>
+                </div>
+            </div>
+            
+            <!-- SECTION AVIS -->
+            ${reviewsSection}
+            
+            <div class="rink-details-actions">
+                ${lat && lng ? `<button class="rink-action-btn rink-action-primary" onclick="openDirections(${lat}, ${lng}, '${rink.name.replace(/'/g, '')}', '${rink.city ? rink.city.replace(/'/g, '') : ''}')">
+                    🗺️ Itinéraire
+                </button>` : ''}
+                <button class="rink-action-btn rink-action-secondary" onclick="closeRinkDetailsModal()">
+                    Fermer
+                </button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+    setTimeout(() => modal.classList.add('active'), 10);
+};
+
+// Avis de démonstration (fallback si pas d'avis Firebase)
+function getFakeReviewsForRink(rinkId) {
+    const fakeReviewsData = {
+        'PatinioireOlympiquedeParis': [
+            { userName: 'Marie D.', rating: 5, comment: 'Magnifique patinoire ! Personnel très accueillant et glace parfaite.' },
+            { userName: 'Thomas M.', rating: 4, comment: 'Super expérience ! Un peu cher mais ça vaut le coup.' },
+            { userName: 'Sophie L.', rating: 5, comment: 'Parfait pour une première fois ! Les moniteurs sont patients.' }
+        ],
+        'IceArenaLyon': [
+            { userName: 'Pierre L.', rating: 4, comment: 'Très bonne patinoire avec un bon équipement. L\'ambiance est sympa.' },
+            { userName: 'Julie M.', rating: 3, comment: 'Patinoire correcte mais souvent bondée. Mieux vaut réserver.' }
+        ]
+    };
+
+    // Chercher les avis correspondants
+    for (const [key, reviews] of Object.entries(fakeReviewsData)) {
+        if (key.toLowerCase().includes(rinkId.toLowerCase()) || rinkId.toLowerCase().includes(key.toLowerCase())) {
+            return reviews;
+        }
+    }
+
+    // Avis génériques si pas de correspondance
+    return [
+        { userName: 'Utilisateur A.', rating: 4, comment: 'Bonne patinoire, expérience agréable !' },
+        { userName: 'Utilisateur B.', rating: 3, comment: 'Correct pour passer un bon moment en famille.' }
+    ];
+}
+
+// Fonction pour fermer la modale
+window.closeRinkDetailsModal = function() {
+    const modal = document.getElementById('rink-details-modal');
+    if (modal) {
+        modal.classList.remove('active');
+        setTimeout(() => modal.remove(), 300);
+    }
+};
+
+// Fonction pour ouvrir les directions
+window.openDirections = function(lat, lng, name, city) {
+    const userAgent = navigator.userAgent;
+    const isIOS = /iPad|iPhone|iPod/.test(userAgent);
+    
+    let url;
+    if (isIOS) {
+        url = `https://maps.apple.com/?q=${encodeURIComponent(name + ', ' + city)}&ll=${lat},${lng}`;
+    } else {
+        url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&destination_place_id=${encodeURIComponent(name + ', ' + city)}`;
+    }
+    
+    window.open(url, '_blank');
+};
+
+// Fonctions utilitaires de debug
+window.mapDebug = {
+    refresh: loadRinksFromCheckIceApp,
+    refreshDirect: loadRinksDirectlyFromFirebase,
+    count: () => markers.length,
+    testRating: (rinkId) => loadAverageRating(rinkId),
+    checkData: () => console.log('checkIceApp:', window.checkIceApp?.allRinks)
+};
+
+console.log("Map.js CORRIGÉ avec chargement direct Firebase + synchronisation checklist chargé");
+
+
+// VRAIE FONCTION LOADCHECKLIST - À ajouter dans app.js
+async function loadChecklist() {
+    try {
+        console.log('🔍 DEBUG: Début loadChecklist()');
+        
+        // Vérifier l'authentification
+        if (!currentUser) {
+            console.log('❌ DEBUG: Utilisateur non connecté');
+            return;
+        }
+        
+        // Vérifier le conteneur
+        const container = document.getElementById('check-section');
+        if (!container) {
+            console.log('❌ DEBUG: Container check-section non trouvé');
+            return;
+        }
+        
+        // Attendre les données si nécessaire
+        if (!window.checkIceApp || !window.checkIceApp.allRinks || window.checkIceApp.allRinks.length === 0) {
+            console.log('⏳ DEBUG: Données patinoires pas prêtes, attente...');
+            let retryCount = 0;
+            const maxRetries = 10;
+            
+            const waitForData = () => {
+                if (window.checkIceApp?.allRinks?.length > 0) {
+                    console.log('✅ Données enfin disponibles, rechargement...');
+                    loadChecklist();
+                } else if (retryCount < maxRetries) {
+                    retryCount++;
+                    console.log(`⏳ Retry ${retryCount}/${maxRetries}...`);
+                    setTimeout(waitForData, 1000);
+                } else {
+                    console.log('❌ Timeout - impossible de charger les données');
+                }
+            };
+            
+            setTimeout(waitForData, 1000);
+            return;
+        }
+        
+        console.log(`📊 DEBUG: ${window.checkIceApp.allRinks.length} patinoires chargées`);
+        
+        // Charger les données utilisateur
+        await loadUserData();
+        
+        // Charger et trier les patinoires
+        const allRinks = window.checkIceApp.allRinks;
+        const sortedRinks = sortRinksByProximityAndAlphabet(allRinks);
+        
+        // Afficher la checklist
+        displayDynamicChecklist(sortedRinks);
+        
+        // Mettre à jour les stats
+        await updateUserStats();
+        
+        console.log('✅ DEBUG: loadChecklist() terminé avec succès');
+        
+    } catch (error) {
+        console.error('❌ Erreur loadChecklist:', error);
+    }
+}
+
+// Fonction d'affichage de la checklist
+function displayDynamicChecklist(rinks) {
+    try {
+        const container = document.getElementById('check-section');
+        
+        // Nettoyer mais préserver le header
+        const existingHeader = container.querySelector('.main-checklist-header');
+        if (existingHeader) {
+            container.innerHTML = '';
+            container.appendChild(existingHeader);
+        }
+        
+        // Séparer visitées et non visitées
+        const unvisitedRinks = rinks.filter(rink => !userVisitedRinks.includes(rink.name));
+        const visitedRinks = rinks.filter(rink => userVisitedRinks.includes(rink.name));
+        
+        // Section "À découvrir"
+        if (unvisitedRinks.length > 0) {
+            const unvisitedSection = document.createElement('div');
+            unvisitedSection.className = 'checklist-section';
+            unvisitedSection.innerHTML = `
+                <div class="section-header">
+                    <h3 class="section-title">🎯 À découvrir (${unvisitedRinks.length})</h3>
+                    <div class="section-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${(visitedRinks.length / rinks.length * 100)}%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="checklist-items" id="unvisited-items"></div>
+            `;
+            container.appendChild(unvisitedSection);
+            
+            const unvisitedContainer = document.getElementById('unvisited-items');
+            unvisitedRinks.forEach(rink => {
+                const item = createChecklistItem(rink, false);
+                unvisitedContainer.appendChild(item);
+            });
+        }
+        
+        // Section "Visitées"
+        if (visitedRinks.length > 0) {
+            const visitedSection = document.createElement('div');
+            visitedSection.className = 'checklist-section visited';
+            visitedSection.innerHTML = `
+                <div class="section-header">
+                    <h3 class="section-title">✅ Visitées (${visitedRinks.length})</h3>
+                </div>
+                <div class="checklist-items" id="visited-items"></div>
+            `;
+            container.appendChild(visitedSection);
+            
+            const visitedContainer = document.getElementById('visited-items');
+            visitedRinks.forEach(rink => {
+                const item = createChecklistItem(rink, true);
+                visitedContainer.appendChild(item);
+            });
+        }
+        
+        // Animation
+        setTimeout(() => {
+            const items = document.querySelectorAll('.checklist-item');
+            items.forEach((item, index) => {
+                setTimeout(() => {
+                    item.style.opacity = '1';
+                    item.style.transform = 'translateY(0)';
+                }, index * 50);
+            });
+        }, 100);
+        
+    } catch (error) {
+        console.error('❌ Erreur displayDynamicChecklist:', error);
+    }
+}
+
+// Fonction de création d'item
+function createChecklistItem(rink, isVisited = false) {
+    const item = document.createElement('div');
+    item.className = `checklist-item ${isVisited ? 'visited' : ''}`;
+    item.setAttribute('data-rink-id', rink.name);
+    
+    item.innerHTML = `
+        <div class="item-content">
+            <div class="item-checkbox ${isVisited ? 'checked' : ''}" 
+                 onclick="toggleRinkVisit('${rink.name}', this)">
+                <div class="checkmark">${isVisited ? '✓' : ''}</div>
+            </div>
+            <div class="item-info">
+                <div class="item-main">
+                    <span class="item-name">${rink.name}</span>
+                    <span class="item-points">+50 pts</span>
+                </div>
+                <div class="item-details">
+                    <span class="item-city">${rink.city || 'Ville inconnue'}</span>
+                    <span class="item-hours">${rink.horaires || 'Horaires non disponibles'}</span>
+                    ${rink.status === 'closed' ? '<span class="status-badge closed">Fermée</span>' : ''}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    return item;
+}
+
+// Fonction toggle avec points
+async function toggleRinkVisit(rinkName, checkboxElement) {
+    try {
+        if (!currentUser) {
+            alert('Vous devez être connecté pour marquer une patinoire comme visitée');
+            return;
+        }
+        
+        const isCurrentlyVisited = userVisitedRinks.includes(rinkName);
+        
+        if (isCurrentlyVisited) {
+            // Supprimer la visite
+            const visitQuery = query(
+                collection(db, 'userVisits'),
+                where('userId', '==', currentUser.uid),
+                where('rinkName', '==', rinkName)
+            );
+            
+            const querySnapshot = await getDocs(visitQuery);
+            querySnapshot.forEach(async (docSnap) => {
+                await updateDoc(doc(db, 'userVisits', docSnap.id), {
+                    visited: false,
+                    updatedAt: new Date()
+                });
+            });
+            
+            userVisitedRinks = userVisitedRinks.filter(name => name !== rinkName);
+            checkboxElement.classList.remove('checked');
+            checkboxElement.querySelector('.checkmark').textContent = '';
+            
+        } else {
+            // Ajouter la visite (+50 points)
+            await addDoc(collection(db, 'userVisits'), {
+                userId: currentUser.uid,
+                rinkName: rinkName,
+                visited: true,
+                visitDate: new Date(),
+                createdAt: new Date(),
+                points: 50
+            });
+            
+            userVisitedRinks.push(rinkName);
+            checkboxElement.classList.add('checked');
+            checkboxElement.querySelector('.checkmark').textContent = '✓';
+        }
+        
+        // Recharger la checklist
+        setTimeout(() => {
+            loadChecklist();
+        }, 500);
+        
+        // Mettre à jour les stats
+        await updateUserStats();
+        
+    } catch (error) {
+        console.error('❌ Erreur toggle visite:', error);
+        alert('Erreur lors de la mise à jour. Veuillez réessayer.');
+    }
+}
+
+// Exposer globalement pour map.js
+window.loadChecklist = loadChecklist;
+
+// Event listeners
+window.addEventListener('checkiceDataReady', () => {
+    console.log('🔄 Données Firebase prêtes, rechargement checklist...');
+    setTimeout(loadChecklist, 1000);
+});
+
+console.log('✅ Checklist system loaded and ready');

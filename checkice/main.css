@@ -5,50 +5,6 @@ body
             background: linear-gradient(135deg, #e0f7ff 0%, #f0f9ff 50%, #e6f3ff 100%);
             min-height: 100vh;
         }
-
-                /* Loader d'authentification */
-        .auth-loader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #e0f7ff 0%, #f0f9ff 50%, #e6f3ff 100%);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            transition: all 0.5s ease;
-        }
-
-        .auth-loader.hidden {
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-        }
-
-        .auth-loader-spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid rgba(59, 130, 246, 0.3);
-            border-left-color: #3b82f6;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        .auth-loader-text {
-            margin-top: 1rem;
-            color: #3b82f6;
-            font-weight: 600;
-            font-size: 1.1rem;
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
         
         .ice-gradient {
             background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 50%, #93c5fd 100%);
@@ -1114,16 +1070,1281 @@ body
     background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
 }
 
-/* ✅ SOLUTION ANTI-FLASH : Masquer le contenu par défaut */
-.auth-loading {
+
+/* ✨ AJOUTER À LA FIN DE main.css */
+
+/* Animations niveau up */
+@keyframes levelUpScale {
+    0% { transform: scale(0) rotate(-180deg); opacity: 0; }
+    50% { transform: scale(1.1) rotate(-10deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+/* Amélioration barre de progression */
+.level-progress {
+    background: linear-gradient(90deg, #10b981 0%, #34d399 50%, #6ee7b7 100%);
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Animation points mise à jour */
+.updated {
+    animation: pointsUpdate 0.8s ease-out;
+}
+
+@keyframes pointsUpdate {
+    0% { transform: scale(1); color: inherit; }
+    50% { transform: scale(1.2); color: #f59e0b; }
+    100% { transform: scale(1); color: inherit; }
+}
+
+/* Animation points gagnés */
+@keyframes pointsEarned {
+    0% {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.3) translateY(-15px);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(0.8) translateY(-30px);
+        opacity: 0;
+    }
+}
+
+/* ✨ AJOUTER À LA FIN DE main.css */
+
+/* Animations niveau up */
+@keyframes levelUpScale {
+    0% { transform: scale(0) rotate(-180deg); opacity: 0; }
+    50% { transform: scale(1.1) rotate(-10deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+/* Animation points gagnés */
+@keyframes pointsEarned {
+    0% {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.3) translateY(-15px);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(0.8) translateY(-30px);
+        opacity: 0;
+    }
+}
+
+
+/* ✨ LAYOUT MODIFIÉ DU BOUTON DE NIVEAU */
+.level-progress-button {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  padding: 12px 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  cursor: default;
+  min-width: 280px;
+  height: 60px;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Conteneur pour logo + nom du niveau (côté gauche) */
+.level-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 70px;
+}
+
+.level-emoji {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.level-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+  text-align: center;
+  line-height: 1.2;
+  max-width: 70px;
+}
+
+/* Conteneur pour barre de progression + score (côté droit) */
+.progress-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* Barre de progression */
+.progress-bar-container {
+  width: 100%;
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%);
+  border-radius: 6px;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
+}
+
+/* Score en dessous de la barre (côté gauche) */
+.progress-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #475569;
+  align-self: flex-start;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .level-progress-button {
+    min-width: 240px;
+    height: 55px;
+    gap: 12px;
+    padding: 10px 14px;
+  }
+  
+  .level-emoji {
+    font-size: 20px;
+  }
+  
+  .level-name {
+    font-size: 11px;
+  }
+  
+  .progress-text {
+    font-size: 13px;
+  }
+}
+
+
+/* ✨ HEADER RÉORGANISÉ - SUPPRIME LE STREAK ET HARMONISE TOUT */
+
+/* Container principal du header */
+.header-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  padding: 1rem 0;
+}
+
+/* Section logo */
+.logo-section {
+  display: flex;
+  align-items: center;
+}
+
+/* Groupe de boutons harmonisés */
+.header-buttons-group {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* ✨ BOUTON DE NIVEAU COMPACT */
+.level-progress-button-compact {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  padding: 12px 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  cursor: default;
+  height: 48px;
+  font-family: 'Inter', sans-serif;
+  min-width: 180px;
+}
+
+/* Logo + nom du niveau (gauche) */
+.level-progress-button-compact .level-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 60px;
+}
+
+.level-progress-button-compact .level-emoji {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.level-progress-button-compact .level-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: #374151;
+  text-align: center;
+  line-height: 1.2;
+  max-width: 60px;
+}
+
+/* Container pour barre + score (droite) */
+.progress-container-compact {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ✅ BARRE DE PROGRESSION RÉDUITE DE 50% */
+.progress-bar-container-compact {
+  width: 50%;
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-bar-container-compact .progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%);
+  border-radius: 4px;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 6px rgba(59, 130, 246, 0.3);
+}
+
+/* ✅ SCORE CENTRÉ EN DESSOUS */
+.progress-text-centered {
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  text-align: center;
+  display: block;
+  width: 100%;
+}
+
+/* Conteneur pour les boutons dynamiques */
+.dynamic-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Style uniforme pour tous les boutons du header */
+.header-btn {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+}
+
+/* Bouton notifications */
+.notification-btn {
+  width: 48px;
+  min-width: 48px;
+  position: relative;
+  background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+  color: white;
+  border: none;
+}
+
+/* ✅ BOUTON PROFIL CORRIGÉ */
+.profile-btn {
+  width: 48px;
+  min-width: 48px;
+  background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+  color: white;
+  font-weight: bold;
+  font-size: 18px; /* ← CORRIGÉ : font-size au lieu de text-lg */
+  border: none;
+}
+
+/* Badge de notification */
+.notification-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #ef4444;
+  color: white;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  font-size: 11px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+}
+
+/* Hover effects */
+.header-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.25);
+}
+
+.level-progress-button-compact:hover {
+  border-color: rgba(59, 130, 246, 0.4);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+/* ✅ SUPPRIMER LE BOUTON STREAK */
+.streak-badge,
+.hidden.md\:flex .streak-fire {
+  display: none !important;
+}
+
+/* Modification de la fonction JS pour utiliser le nouveau conteneur */
+.dynamic-buttons .ice-button {
+  height: 48px;
+  padding: 0 16px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 14px;
+  margin: 0;
+}
+
+
+/* groupe de boutons dynamiques */
+.header-buttons{
+  display:flex;
+  align-items:center;
+  gap:0.75rem;          /* espace constant → plus de chevauchement */
+}
+
+/* les ice-button du header */
+.header-buttons .ice-button{
+  height:48px;
+  padding:0 16px;
+  border-radius:12px;
+  font-weight:600;
+  font-size:14px;
+  background:linear-gradient(135deg,#3b82f6 0%,#60a5fa 100%);
+  color:#fff;
+  box-shadow:0 2px 8px rgba(59,130,246,.15);
+  transition:all .2s;
+}
+.header-buttons .ice-button:hover{
+  transform:translateY(-2px);
+  box-shadow:0 4px 15px rgba(59,130,246,.25);
+}
+
+/* ✨ BOUTON POINTS JAUNE */
+.points-display-button {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+    backdrop-filter: blur(10px);
+    padding: 12px 16px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    cursor: default;
+    height: 48px;
+    font-family: 'Inter', sans-serif;
+    min-width: 120px;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.points-display-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+    background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+}
+
+/* Icône étoile */
+.points-icon {
+    font-size: 20px;
+    line-height: 1;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+}
+
+/* Conteneur texte */
+.points-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+}
+
+/* Label "Points" */
+.points-label {
+    font-size: 10px;
+    font-weight: 600;
+    opacity: 0.9;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Valeur des points */
+.points-value {
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 1;
+}
+
+/* Animation quand les points changent */
+.points-updated {
+    animation: pointsGlow 1s ease-out;
+}
+
+@keyframes pointsGlow {
+    0% { 
+        transform: scale(1); 
+        box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+    }
+    50% { 
+        transform: scale(1.05); 
+        box-shadow: 0 8px 25px rgba(245, 158, 11, 0.6);
+    }
+    100% { 
+        transform: scale(1); 
+        box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+    }
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .points-display-button {
+        min-width: 100px;
+        padding: 10px 14px;
+    }
+    
+    .points-icon {
+        font-size: 18px;
+    }
+    
+    .points-value {
+        font-size: 13px;
+    }
+}
+
+#header-rinks-button:hover {
+  box-shadow: 0 0 8px 3px rgba(59, 130, 246, 0.5);
+  cursor: pointer;
+  transition: box-shadow 0.3s ease;
+}
+
+/* Ajouts pour la géolocalisation */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+/* Styles pour les suggestions d'adresse */
+#address-suggestions {
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    background: white;
+    border: 1px solid #e5e7eb;
+}
+
+.address-suggestion:hover {
+    background-color: #eff6ff;
+}
+
+/* Modal pour la géolocalisation */
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
     opacity: 0;
     visibility: hidden;
     transition: all 0.3s ease;
 }
 
-.auth-verified {
+.modal.active {
     opacity: 1;
     visibility: visible;
 }
 
+.modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 1rem;
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    transform: translateY(20px);
+    transition: transform 0.3s ease;
+}
 
+.modal.active .modal-content {
+    transform: translateY(0);
+}
+
+/* Popup CheckIce personnalisé */
+.checkice-popup .leaflet-popup-content-wrapper {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border-radius: 16px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    font-family: 'Inter', sans-serif;
+    padding: 0;
+}
+
+.checkice-popup .leaflet-popup-content {
+    margin: 0;
+    min-width: 320px;
+}
+
+.checkice-popup .leaflet-popup-tip {
+    background: #1e293b;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.checkice-popup-content {
+    padding: 20px;
+}
+
+.popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.popup-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+    color: #f1f5f9;
+    flex: 1;
+    margin-right: 12px;
+}
+
+.popup-status {
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.popup-info {
+    margin-bottom: 16px;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.info-icon {
+    font-size: 16px;
+    width: 20px;
+    text-align: center;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #cbd5e1;
+    min-width: 70px;
+}
+
+.info-value {
+    color: #f1f5f9;
+}
+
+.info-link {
+    color: #60a5fa;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.info-link:hover {
+    color: #93c5fd;
+}
+
+.popup-reviews {
+    margin: 16px 0;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.reviews-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #fbbf24;
+}
+
+.reviews-loading {
+    font-size: 13px;
+    color: #94a3b8;
+    text-align: center;
+    padding: 8px;
+}
+
+.reviews-content {
+    font-size: 13px;
+}
+
+.review-rating {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 4px;
+}
+
+.star-rating {
+    display: flex;
+    gap: 2px;
+}
+
+.star {
+    color: #fbbf24;
+    font-size: 14px;
+}
+
+.star.empty {
+    color: #374151;
+}
+
+.review-text {
+    color: #e2e8f0;
+    line-height: 1.4;
+    margin-bottom: 8px;
+}
+
+.review-author {
+    font-size: 11px;
+    color: #94a3b8;
+    font-style: italic;
+}
+
+.popup-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.action-btn {
+    flex: 1;
+    padding: 12px 16px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.directions-btn {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: white;
+}
+
+.directions-btn:hover {
+    background: linear-gradient(135deg, #2563eb, #1e40af);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+}
+
+.review-btn {
+    background: linear-gradient(135deg, #10b981, #047857);
+    color: white;
+}
+
+.review-btn:hover {
+    background: linear-gradient(135deg, #059669, #065f46);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+}
+
+.btn-icon {
+    font-size: 16px;
+}
+
+/* Modal d'avis */
+.review-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    font-family: 'Inter', sans-serif;
+}
+
+.review-modal-content {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 400px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.modal-header {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.modal-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin: 0 0 8px 0;
+}
+
+.modal-subtitle {
+    font-size: 14px;
+    color: #94a3b8;
+    margin: 0;
+}
+
+.rating-section {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.rating-label {
+    display: block;
+    font-weight: 600;
+    color: #cbd5e1;
+    margin-bottom: 12px;
+}
+
+.star-input {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.star-btn {
+    background: none;
+    border: none;
+    font-size: 32px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #374151;
+}
+
+.star-btn:hover,
+.star-btn.active {
+    color: #fbbf24;
+    transform: scale(1.1);
+}
+
+.comment-section {
+    margin-bottom: 20px;
+}
+
+.comment-label {
+    display: block;
+    font-weight: 600;
+    color: #cbd5e1;
+    margin-bottom: 8px;
+}
+
+.comment-input {
+    width: 100%;
+    min-height: 80px;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.2);
+    color: #f1f5f9;
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+    box-sizing: border-box;
+}
+
+.comment-input:focus {
+    outline: none;
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+}
+
+.comment-input::placeholder {
+    color: #64748b;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.modal-btn {
+    flex: 1;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.cancel-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: #cbd5e1;
+}
+
+.cancel-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.submit-btn {
+    background: linear-gradient(135deg, #10b981, #047857);
+    color: white;
+}
+
+.submit-btn:hover {
+    background: linear-gradient(135deg, #059669, #065f46);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+}
+
+.submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* === POPUP COMPACT CHECKICE === */
+.checkice-compact-popup .leaflet-popup-content-wrapper {
+  background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(240,249,255,0.95) 100%);
+  backdrop-filter: blur(15px);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(59,130,246,0.2);
+  border: 1px solid rgba(255,255,255,0.3);
+  padding: 0;
+  font-family: Inter, sans-serif;
+}
+
+.checkice-compact-popup .leaflet-popup-tip {
+  background: rgba(255,255,255,0.95);
+  border: 1px solid rgba(255,255,255,0.3);
+}
+
+.checkice-compact-popup .leaflet-popup-close-button {
+  color: #6b7280;
+  font-size: 18px;
+  font-weight: bold;
+  padding: 8px;
+  top: 8px;
+  right: 8px;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  background: rgba(255,255,255,0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(59,130,246,0.1);
+}
+
+.checkice-compact-popup .leaflet-popup-close-button:hover {
+  color: #374151;
+  background: rgba(59,130,246,0.1);
+  transform: scale(1.05);
+}
+
+/* Contenu du popup compact */
+.compact-popup-card {
+  padding: 16px;
+  min-width: 280px;
+  max-width: 320px;
+}
+
+.compact-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.compact-title {
+  font-weight: 700;
+  font-size: 16px;
+  color: #1f2937;
+  margin: 0;
+  flex: 1;
+  margin-right: 8px;
+}
+
+.compact-status {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+.compact-status.open {
+  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+  color: #059669;
+  border: 1px solid rgba(5,150,105,0.2);
+}
+
+.compact-status.closed {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  color: #dc2626;
+  border: 1px solid rgba(220,38,38,0.2);
+}
+
+.compact-info-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #475569;
+  margin: 8px 0;
+}
+
+.compact-icon {
+  width: 18px;
+  text-align: center;
+  color: #3b82f6;
+  font-size: 14px;
+}
+
+.compact-rating {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0;
+  color: #475569;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.compact-actions {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(59,130,246,0.1);
+}
+
+.compact-btn {
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(59,130,246,0.3);
+}
+
+.compact-btn:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(59,130,246,0.4);
+}
+
+/* Modale fiche complète */
+.rink-details-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.rink-details-modal.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.rink-details-content {
+  background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(240,249,255,0.95) 100%);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  padding: 24px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 70px rgba(59,130,246,0.3);
+  border: 1px solid rgba(255,255,255,0.3);
+  position: relative;
+  transform: scale(0.95);
+  transition: transform 0.3s ease;
+}
+
+.rink-details-modal.active .rink-details-content {
+  transform: scale(1);
+}
+
+.rink-details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(59,130,246,0.1);
+}
+
+.rink-details-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0;
+  flex: 1;
+  margin-right: 16px;
+}
+
+.rink-details-close {
+  background: rgba(255,255,255,0.8);
+  border: 1px solid rgba(59,130,246,0.1);
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #6b7280;
+  font-size: 18px;
+  font-weight: bold;
+  transition: all 0.2s ease;
+}
+
+.rink-details-close:hover {
+  background: rgba(59,130,246,0.1);
+  color: #374151;
+  transform: scale(1.05);
+}
+
+.rink-details-info {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.rink-info-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 15px;
+}
+
+.rink-info-icon {
+  font-size: 16px;
+  color: #3b82f6;
+  width: 20px;
+  text-align: center;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.rink-info-label {
+  font-weight: 600;
+  color: #374151;
+  min-width: 80px;
+  flex-shrink: 0;
+}
+
+.rink-info-value {
+  color: #1f2937;
+  flex: 1;
+}
+
+.rink-info-link {
+  color: #3b82f6;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.rink-info-link:hover {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.rink-details-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(59,130,246,0.1);
+}
+
+.rink-action-btn {
+  flex: 1;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.rink-action-primary {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(59,130,246,0.3);
+}
+
+.rink-action-primary:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(59,130,246,0.4);
+}
+
+.rink-action-secondary {
+  background: transparent;
+  border: 2px solid #3b82f6;
+  color: #3b82f6;
+}
+
+.rink-action-secondary:hover {
+  background: #3b82f6;
+  color: white;
+  transform: translateY(-2px);
+}
+
+@media (max-width: 640px) {
+  .compact-popup-card {
+    min-width: 260px;
+    max-width: 280px;
+    padding: 14px;
+  }
+
+  .rink-details-content {
+    margin: 20px;
+    max-height: 85vh;
+    padding: 20px;
+  }
+
+  .rink-details-actions {
+    flex-direction: column;
+  }
+}
+
+/* Ajustement pour le header compact sans statut */
+.compact-header {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* Changé de space-between à flex-start */
+    margin-bottom: 12px;
+}
+
+.compact-title {
+    font-weight: 700;
+    font-size: 16px;
+    color: #1f2937;
+    margin: 0;
+    width: 100%; /* Prend toute la largeur */
+}
+
+/* Section avis dans la fiche complète */
+.rink-reviews-section {
+    margin: 20px 0;
+    padding: 16px;
+    background: linear-gradient(135deg, rgba(59,130,246,0.02) 0%, rgba(147,197,253,0.05) 100%);
+    border-radius: 12px;
+    border: 1px solid rgba(59,130,246,0.08);
+}
+
+.rink-reviews-section h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 12px 0;
+    color: #3b82f6;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+/* Style des cartes d'avis individuels */
+.rink-reviews-section > div > div {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.rink-reviews-section > div > div:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59,130,246,0.15);
+}
