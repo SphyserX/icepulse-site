@@ -1,0 +1,188 @@
+/* ticket-styles.css - Version CORRIGÉE avec z-index élevé */
+
+/* ========== Z-INDEX ÉLEVÉ POUR PASSER AU-DESSUS DE LEAFLET ========== */
+.ts-modal {
+    backdrop-filter: blur(20px);
+    z-index: 10000 !important; /* ✅ CORRECTION: z-index très élevé */
+}
+
+/* ========== CONTENUS DES MODALES ========== */
+.ts-modal .frost-effect {
+    background: rgba(255, 255, 255, 0.98) !important; /* ✅ Plus opaque */
+    backdrop-filter: blur(25px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3) !important; /* ✅ Ombre plus forte */
+    z-index: 10001 !important; /* ✅ Encore plus élevé */
+    position: relative;
+}
+
+/* ========== OVERLAY SOMBRE ========== */
+.ts-modal::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 9999;
+}
+
+/* ========== PRÉFIXES POUR ISOLATION ========== */
+.ts-ticket-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(59, 130, 246, 0.1);
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.ts-ticket-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 60px rgba(59, 130, 246, 0.15);
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+/* ========== STATUTS AVEC PRÉFIXES ========== */
+.ts-status-blue {
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    color: #1e40af;
+    border: 1px solid #3b82f6;
+}
+
+.ts-status-yellow {
+    background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
+    color: #92400e;
+    border: 1px solid #f59e0b;
+}
+
+.ts-status-green {
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    color: #065f46;
+    border: 1px solid #10b981;
+}
+
+.ts-status-gray {
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+    color: #374151;
+    border: 1px solid #6b7280;
+}
+
+.ts-status-red {
+    background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%);
+    color: #991b1b;
+    border: 1px solid #ef4444;
+}
+
+.ts-status-purple {
+    background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%);
+    color: #7c3aed;
+    border: 1px solid #8b5cf6;
+}
+
+.ts-status-orange {
+    background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%);
+    color: #9a3412;
+    border: 1px solid #f97316;
+}
+
+/* ========== ANIMATIONS ========== */
+@keyframes ts-slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.ts-ticket-card {
+    animation: ts-slideIn 0.3s ease-out;
+}
+
+/* ========== SCROLLBARS PERSONNALISÉS ========== */
+#ts-tickets-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+#ts-tickets-container::-webkit-scrollbar-track {
+    background: rgba(59, 130, 246, 0.1);
+    border-radius: 4px;
+}
+
+#ts-tickets-container::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+    border-radius: 4px;
+}
+
+#ts-tickets-container::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+}
+
+/* ========== BOUTONS DE FERMETURE ========== */
+.ts-modal button[onclick*="closeModal"] {
+    z-index: 10002 !important;
+    position: relative;
+}
+
+/* ========== INPUTS ET FORMULAIRES ========== */
+.ts-modal input,
+.ts-modal select,
+.ts-modal textarea,
+.ts-modal button {
+    z-index: 10002 !important;
+    position: relative;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+    .ts-modal .frost-effect {
+        margin: 1rem;
+        max-width: calc(100vw - 2rem);
+        z-index: 10001 !important;
+    }
+    
+    .ts-ticket-card {
+        padding: 1rem;
+    }
+}
+
+/* ========== INTÉGRATION THÈME ICE EXISTANT ========== */
+.ts-modal .frost-effect {
+    background: rgba(255, 255, 255, 0.98) !important;
+    backdrop-filter: blur(25px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* ========== LOADING STATE ========== */
+.ts-loading {
+    background: linear-gradient(90deg, #f0f9ff 25%, #e0f2fe 50%, #f0f9ff 75%);
+    background-size: 200% 100%;
+    animation: ts-shimmer 2s infinite;
+}
+
+@keyframes ts-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* ========== CORRECTION SPÉCIFIQUE LEAFLET ========== */
+.leaflet-container {
+    z-index: 1 !important; /* ✅ Forcer la carte à rester en arrière-plan */
+}
+
+.leaflet-control-container {
+    z-index: 2 !important; /* ✅ Contrôles de carte restent bas */
+}
+
+/* ========== SÉCURITÉ ANTI-CONFLIT ========== */
+.ts-modal * {
+    box-sizing: border-box;
+}
+
+/* ========== DEBUG (à supprimer en prod) ========== */
+/*
+.ts-modal {
+    border: 3px solid red !important;
+}
+*/

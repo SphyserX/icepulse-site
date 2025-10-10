@@ -1,0 +1,111 @@
+📦 Guide Firebase Storage - Étape par étape
+1. Accéder à la Console Firebase
+Va sur console.firebase.google.com
+
+Sélectionne ton projet CHECKICE
+
+2. Activer Firebase Storage
+Dans le menu de gauche, clique sur "Storage" (icône dossier)
+
+Clique sur le bouton "Commencer" ou "Get Started"
+
+Tu verras une fenêtre de configuration :
+
+Étape 1 : Règles de sécurité (garde les règles par défaut pour l'instant, on va les modifier après)
+
+Étape 2 : Emplacement Cloud Storage (choisis europe-west pour l'Europe)
+
+Clique sur "Terminé"
+
+Firebase Storage est maintenant activé ! ✅
+
+3. Configurer les règles de sécurité
+Dans la page Storage, clique sur l'onglet "Rules" (Règles) en haut
+
+Tu verras des règles par défaut. Remplace-les par ceci :
+
+javascript
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Autoriser la lecture de toutes les photos de profil
+    match /profile-photos/{userId} {
+      // Tout le monde peut lire (voir) les photos
+      allow read: if true;
+      
+      // Seul le propriétaire peut uploader/modifier sa photo
+      // ET la taille doit être < 2 MB
+      allow write: if request.auth != null 
+                   && request.auth.uid == userId 
+                   && request.resource.size < 2 * 1024 * 1024;
+    }
+  }
+}
+Clique sur "Publier" ou "Publish"
+
+4. Vérifier l'URL de ton Storage
+Dans l'onglet "Files" (Fichiers) de Storage
+
+En haut, tu verras une URL du type :
+
+text
+gs://ton-projet.appspot.com
+Note cette URL (mais normalement Firebase la détecte automatiquement)
+
+5. Tester l'upload
+Une fois que tu as :
+
+✅ Activé Storage
+
+✅ Configuré les règles
+
+✅ Ajouté le code que je t'ai donné
+
+Tu peux tester :
+
+Ouvre ton application
+
+Clique sur ton avatar → "Paramètres du compte"
+
+Clique sur "Choisir une photo"
+
+Sélectionne une image (JPG, PNG ou GIF, max 2 MB)
+
+La photo devrait s'uploader et remplacer tes initiales ! 🎉
+
+6. Vérifier que ça fonctionne
+Dans la console Firebase → Storage → Files, tu verras un dossier :
+
+text
+profile-photos/
+  └── [uid-utilisateur].jpg (ou .png)
+🔒 Explication des règles de sécurité
+javascript
+// Tout le monde peut VOIR les photos
+allow read: if true;
+
+// Seul le propriétaire peut MODIFIER sa photo
+allow write: if request.auth != null           // Utilisateur connecté
+             && request.auth.uid == userId      // C'est bien SA photo
+             && request.resource.size < 2MB;    // Taille max 2 MB
+Cela signifie :
+
+✅ N'importe qui peut voir les photos de profil (pour l'affichage dans les profils publics)
+
+✅ Seul le propriétaire peut uploader/modifier/supprimer SA photo
+
+✅ Taille limitée à 2 MB pour éviter les abus
+
+⚠️ Si ça ne fonctionne pas
+Erreur possible : storage/unauthorized
+→ Vérifie que les règles sont bien publiées
+
+Erreur possible : storage/object-not-found
+→ Normal si tu essayes de charger une photo qui n'existe pas encore
+
+Erreur possible : storage/quota-exceeded
+→ Tu as dépassé le quota gratuit (5 GB) - peu probable au début
+
+C'est tout ! Une fois Firebase Storage activé avec ces règles, l'upload de photo fonctionnera parfaitement. 🚀
+
+Des questions sur une étape en particulier ?
