@@ -1,0 +1,4 @@
+git add .
+git commit -m "Custom message"
+git push
+

@@ -506,6 +506,34 @@ class FriendsChat {
     }
 }
 
+// ============================================================================
+// 🚗 FONCTION UNIFIÉE : Ouvrir chat depuis covoiturage
+// Réutilise le même système de chat que les amis
+// ============================================================================
+
+window.openCarpoolingChat = async function(friendId, friendName, tripId) {
+    console.log(`🚗 Ouverture chat covoiturage: ${friendName} (trajet ${tripId})`);
+    
+    // Utiliser la fonction existante de friends-chat
+    if (window.openChatModal) {
+        window.openChatModal(friendName, friendId);
+        
+        // Optionnel : Ajouter un message automatique mentionnant le trajet
+        setTimeout(() => {
+            const messageInput = document.getElementById('message-input');
+            if (messageInput && tripId) {
+                messageInput.placeholder = `Message concernant le trajet...`;
+            }
+        }, 500);
+    } else {
+        console.error('❌ Fonction openChatModal introuvable');
+    }
+};
+
+// Exposer globalement
+window.openCarpoolingChat = openCarpoolingChat;
+
+
 // 🚀 INITIALISER LE SYSTÈME DE CHAT
 const friendsChat = new FriendsChat();
 window.friendsChat = friendsChat;

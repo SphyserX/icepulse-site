@@ -272,8 +272,17 @@ export async function getUserFriends(userId = auth.currentUser?.uid) {
       }
     }
     
-    // 🏆 Trier par points (classement)
-    return friendsData.sort((a, b) => (b.points || 0) - (a.points || 0));
+    // 🏆 Trier par statut en ligne puis alphabétique
+        return friendsData.sort((a, b) => {
+            // 1. En ligne d'abord
+            const aOnline = a.isOnline ? 1 : 0;
+            const bOnline = b.isOnline ? 1 : 0;
+            if (aOnline !== bOnline) {
+                return bOnline - aOnline;
+            }
+            // 2. Puis alphabétique
+            return (a.username || '').localeCompare(b.username || '');
+        });
     
   } catch (error) {
     console.error('❌ Erreur récupération amis:', error);

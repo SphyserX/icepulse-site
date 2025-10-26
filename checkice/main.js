@@ -3,14 +3,15 @@ import { db, auth } from './firebase.js';
 import { doc, getDoc, setDoc, updateDoc, collection, getDocs, addDoc, deleteDoc, query, where } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js';
 import { onAuthStateChanged, signOut, updateEmail, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js';
 import { onSnapshot } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js';
+import { showCustomConfirm, showCustomPrompt } from './utils.js';
 
 // Variables globales optimisées
-let rinkCheckboxListeners = [];
 let userProfile = null;
 let appInitialized = false;
 let savingRinks = false;
-let pointsListener = null;
 let userProfileListener = null;
+let rinkCheckboxListeners = [];
+
 
 // Initialisation de l'application
 document.addEventListener('DOMContentLoaded', function() {
@@ -53,6 +54,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }).catch(error => {
             console.error('❌ Erreur chargement event-channels.js:', error);
             console.warn('⚠️ Le système de canaux ne sera pas disponible');
+        });
+
+        // 🚗 AJOUTE CES LIGNES ICI
+        console.log('🚗 Chargement du système de covoiturage...');
+        import('./carpooling-ui.js')
+        .then(module => {
+            if (module.initializeCarpooling) {
+            module.initializeCarpooling();
+            console.log('✅ Covoiturage initialisé !');
+            }
+        })
+        .catch(error => {
+            console.error('❌ Erreur chargement carpooling-ui.js', error);
         });
         
         // Initialiser la géolocalisation après un délai
@@ -151,108 +165,67 @@ onAuthStateChanged(auth, async (user) => {
         window.currentUser = user;
         await loadUserProfile(user);
         await createEventAdminPanel();
-        await updateHeaderLevelDisplay();
-        cleanupDuplicateLevelButtons();
-        setupPointsListener();
     } else {
         cleanup();
         window.location.href = 'login.html';
     }
 });
 
-function setupPointsListener() {
-    const user = auth.currentUser;
-    if (!user) return;
-    
-    // Nettoyer l'ancien listener s'il existe
-    if (pointsListener) {
-        pointsListener();
-        pointsListener = null;
-    }
-    
-    const userDocRef = doc(db, 'users', user.uid);
-    pointsListener = onSnapshot(userDocRef, (doc) => {
-        if (doc.exists()) {
-            console.log('Points modifiés, mise à jour du header...');
-            const userData = doc.data();
-            userProfile = userData;
-            updateHeaderLevelDisplay(); // Ceci va appeler updatePointsDisplay aussi
-            
-            // Animation sur le bouton points
-            const pointsButton = document.getElementById('header-points-button');
-            if (pointsButton) {
-                pointsButton.classList.add('points-updated');
-                setTimeout(() => {
-                    pointsButton.classList.remove('points-updated');
-                }, 1000);
-            }
-        }
-    }, (error) => {
-        console.error('Erreur listener points:', error);
-    });
-}
 
-// Créé les boutons "Mes Patinoires" et "Mes Déplacements" et les range
+
+// ========================================
+// CRÉATION DES BOUTONS HEADER - VERSION CORRIGÉE
+// ========================================
 function createTopHeaderMenus() {
-    console.log('Création des boutons header...');
+    console.log('🔨 Création du bouton Home...');
     
-    // 1. Trouver ou créer le conteneur du header
-    let headerButtons = document.getElementById('dynamic-header-buttons');
-    if (!headerButtons) {
-        headerButtons = document.createElement('div');
-        headerButtons.id = 'dynamic-header-buttons';
-        headerButtons.className = 'header-buttons';
-        
-        // On l'insère juste avant le bouton de notifications s'il existe, sinon on le met à la fin du premier header rencontré
-        const notif = document.getElementById('notification-button');
-        if (notif && notif.parentElement) {
-            notif.parentElement.parentElement.insertBefore(headerButtons, notif.parentElement);
-        } else {
-            const firstHeader = document.querySelector('header, .header-container') || document.body;
-            firstHeader.prepend(headerButtons);
-        }
+    const dynamicContainer = document.getElementById('dynamic-buttons-container');
+    if (!dynamicContainer) {
+        console.error('❌ Container dynamique introuvable');
+        return;
     }
-
-    // 2. Nettoyer d'anciens doublons
-    ['header-rinks-button', 'header-moves-button'].forEach(id => {
-        const old = document.getElementById(id);
-        if (old) old.remove();
-    });
-
-    // 3. Créer les deux boutons
-    const rinksBtn = document.createElement('button');
-    rinksBtn.id = 'header-rinks-button';
-    rinksBtn.className = 'ice-button';
-    rinksBtn.style.width = '3rem';
-    rinksBtn.style.height = '3rem';
-    rinksBtn.style.padding = '0';
-    rinksBtn.style.display = 'flex';
-    rinksBtn.style.alignItems = 'center';
-    rinksBtn.style.justifyContent = 'center';
-    rinksBtn.innerHTML = `
-        <svg viewBox="0 0 64 64" fill="white" xmlns="http://www.w3.org/2000/svg" style="width: 55%; height: 55%; display: block;">
-            <path d="M32 12l22 22h-6v18h-12v-12h-8v12h-12v-18h-6z"/>
+    
+    // Nettoyer les anciens boutons
+    dynamicContainer.innerHTML = '';
+    
+    // ✅ BOUTON HOME - OUVRE LA MODALE PATINOIRES FAVORITES
+    const homeBtn = document.createElement('button');
+    homeBtn.id = 'header-home-button';
+    homeBtn.className = 'header-btn home-btn';
+    homeBtn.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
         </svg>
     `;
-    rinksBtn.title = 'Cliquez pour choisir vos patinoires préférées';
-    rinksBtn.setAttribute('aria-label', 'Choisir mes patinoires préférées');
-
-    const movesBtn = document.createElement('button');
-    movesBtn.id = 'header-moves-button';
-    movesBtn.textContent = 'Mes Déplacements';
-    movesBtn.className = 'ice-button';
-
-    // 4. Les insérer
-    headerButtons.appendChild(rinksBtn);
-    headerButtons.appendChild(movesBtn);
-
-    // 5. Créer les modales et lier les events
-    createRinksModal();
-    createMovesModal();
-    setupHeaderEvents();
-
-    console.log('Boutons header prêts ✅');
+    homeBtn.title = 'Mes patinoires favorites';
+    
+    // ✅ CORRECTION : Ouvrir la modale au lieu de showSection
+    homeBtn.onclick = async () => {
+        console.log('🏠 Ouverture de la modale patinoires favorites');
+        closeAllModals();
+        
+        // Créer la modale si elle n'existe pas
+        if (!document.getElementById('rinks-modal')) {
+            createRinksModal();
+        }
+        
+        const modal = document.getElementById('rinks-modal');
+        modal.classList.add('active');
+        
+        // Charger les patinoires
+        await loadRinksForSelection();
+        
+        // Charger les favoris de l'utilisateur
+        setTimeout(async () => {
+            await loadUserRinksFromFirebase();
+        }, 150);
+    };
+    
+    dynamicContainer.appendChild(homeBtn);
+    console.log('✅ Bouton Home créé avec succès');
 }
+
+
 
 // CORRECTION : Créer la modale "Mes Patinoires" avec contenu HTML complet
 function createRinksModal() {
@@ -602,27 +575,28 @@ async function loadRinksForSelection() {
         cleanupRinkListeners();
         
         container.innerHTML = '<p>Chargement...</p>';
-
+        
         const rinksCollection = collection(db, 'rinks');
         const rinksSnapshot = await getDocs(rinksCollection);
-
+        
         container.innerHTML = '';
 
         if (!rinksSnapshot.empty) {
             const fragment = document.createDocumentFragment();
             
-            rinksSnapshot.forEach((doc) => {
+            rinksSnapshot.forEach(doc => {
                 const rinkData = doc.data();
+                
                 if (rinkData.name) {
                     const label = document.createElement('label');
                     label.className = 'flex items-center cursor-pointer p-2 rounded-lg hover:bg-white hover:bg-opacity-60 transition-colors';
-
+                    
                     const checkbox = document.createElement('input');
                     checkbox.type = 'checkbox';
                     checkbox.value = rinkData.city ? `${rinkData.name} - ${rinkData.city}` : rinkData.name;
                     checkbox.name = 'modal-user-rinks';
                     checkbox.className = 'mr-3 w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500';
-
+                    
                     // ÉTAPE 2 : Créer le handler avec une référence unique
                     const changeHandler = async (e) => {
                         console.log('Changement:', e.target.value, '- Coché:', e.target.checked);
@@ -631,21 +605,21 @@ async function loadRinksForSelection() {
                             await saveUserRinksToFirebase();
                         }, 100);
                     };
-
+                    
                     // ÉTAPE 3 : Ajouter l'event listener et le stocker
                     checkbox.addEventListener('change', changeHandler);
                     rinkCheckboxListeners.push({ element: checkbox, handler: changeHandler });
-
+                    
                     const text = document.createElement('span');
                     text.textContent = rinkData.city ? `${rinkData.name} - ${rinkData.city}` : rinkData.name;
                     text.className = 'text-sm text-gray-700 font-medium';
-
+                    
                     label.appendChild(checkbox);
                     label.appendChild(text);
                     fragment.appendChild(label);
                 }
             });
-
+            
             container.appendChild(fragment);
             
             // Attendre que le DOM soit complètement mis à jour
@@ -653,21 +627,31 @@ async function loadRinksForSelection() {
         } else {
             container.innerHTML = '<p>Aucune patinoire trouvée</p>';
         }
+        
     } catch (error) {
         console.error('Erreur lors du chargement des patinoires:', error);
         container.innerHTML = '<p class="text-red-500">Erreur de chargement</p>';
     }
 }
 
+
 // Nettoyer les listeners des checkboxes
 function cleanupRinkListeners() {
-    rinkCheckboxListeners.forEach(({ element, handler }) => {
-        if (element && handler) {
-            element.removeEventListener('change', handler);
-        }
-    });
-    rinkCheckboxListeners = [];
+    console.log('🧹 Nettoyage des anciens listeners...');
+    if (rinkCheckboxListeners && rinkCheckboxListeners.length > 0) {
+        rinkCheckboxListeners.forEach(({ element, handler }) => {
+            if (element && handler) {
+                try {
+                    element.removeEventListener('change', handler);
+                } catch (e) {
+                    console.warn('Erreur nettoyage listener:', e);
+                }
+            }
+        });
+        rinkCheckboxListeners = [];
+    }
 }
+
 
 // FIREBASE : Charger les patinoires sauvegardées de l'utilisateur
 async function loadUserRinksFromFirebase() {
@@ -968,7 +952,14 @@ async function editMoveModal(moveId) {
 
 // Supprimer un déplacement
 async function deleteMoveModal(moveId) {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer ce déplacement ?')) return;
+    // ✅ Modale personnalisée au lieu de confirm()
+    const confirmed = await showCustomConfirm(
+        'Supprimer ce déplacement ?',
+        'Cette action est irréversible. Le déplacement sera définitivement supprimé de votre historique.',
+        '🗑️'
+    );
+    
+    if (!confirmed) return;
 
     try {
         const moveRef = doc(db, 'moves', moveId);
@@ -980,6 +971,7 @@ async function deleteMoveModal(moveId) {
         showNotification('Erreur lors de la suppression', 'error');
     }
 }
+
 
 // Formater la date et l'heure pour l'affichage
 function formatMoveDate(date, time) {
@@ -1262,8 +1254,6 @@ async function loadUserProfile(user) {
                 username: '',
                 myRinks: [],
                 moves: [],
-                points: 0,
-                level: 1,
                 createdAt: new Date().toISOString()
             };
             
@@ -2094,17 +2084,25 @@ window.editEventFromAdmin = async function(eventId) {
 
 
 window.deleteEventFromAdmin = async function(eventId, eventTitle) {
-    if (!confirm(`Supprimer l'événement "${eventTitle}" ?`)) return;
-    try {
-        await deleteDoc(doc(db, 'events', eventId));
-        showNotification('Événement supprimé', 'success');
-        loadEventsForAdmin();
-        await displayEvents();
-    } catch (error) {
-        console.error('Erreur suppression:', error);
-        showNotification('Erreur lors de la suppression', 'error');
-    }
+  const confirmed = await showCustomConfirm(
+    'Supprimer cet événement ?',
+    `L'événement "${eventTitle}" sera définitivement supprimé. Cette action est irréversible.`,
+    '🗑️'
+  );
+  
+  if (!confirmed) return;
+  
+  try {
+    await deleteDoc(doc(db, 'events', eventId));
+    showNotification('Événement supprimé', 'success');
+    loadEventsForAdmin();
+    await displayEvents();
+  } catch (error) {
+    console.error('Erreur suppression:', error);
+    showNotification('Erreur lors de la suppression', 'error');
+  }
 };
+
 
 function formatDateForAdmin(date, time) {
     const eventDate = new Date(`${date} ${time}`);
@@ -2118,188 +2116,15 @@ function formatDateForAdmin(date, time) {
     });
 }
 
-// === FONCTION CORRIGÉE - TROUVE L'EXISTANT AU LIEU DE CRÉER ===
 
-function findOrCreateLevelButton() {
-    // CHERCHER L'ANCIEN BOUTON - plusieurs possibilités d'ID/classe
-    let levelButton = document.querySelector('.level-progress-button') ||
-                     document.querySelector('.level-progress-button-compact') ||
-                     document.getElementById('header-level-button') ||
-                     document.querySelector('[class*="level"]') ||
-                     document.querySelector('#level');
 
-    if (!levelButton) {
-        console.log('Aucun bouton niveau trouvé, création...');
-        // Créer seulement si vraiment aucun n'existe
-        levelButton = document.createElement('div');
-        levelButton.className = 'level-progress-button-compact';
-        
-        // L'insérer au bon endroit (avant les boutons dynamiques)
-        const headerButtons = document.getElementById('dynamic-header-buttons');
-        if (headerButtons && headerButtons.parentElement) {
-            headerButtons.parentElement.insertBefore(levelButton, headerButtons);
-        }
-    } else {
-        console.log('Bouton niveau existant trouvé, mise à jour...');
-        // S'assurer qu'il a la bonne classe
-        levelButton.className = 'level-progress-button-compact';
-    }
 
-    return levelButton;
-}
-
-// === FONCTION POUR METTRE À JOUR L'AFFICHAGE DU NIVEAU ===
-async function updateHeaderLevelDisplay() {
-    const user = auth.currentUser;
-    if (!user) return;
-
-    try {
-        // Récupérer les données utilisateur
-        const userDoc = await getDoc(doc(db, 'users', user.uid));
-        const userData = userDoc.exists() ? userDoc.data() : {};
-        const points = userData.points || 0;
-
-        // Utiliser les LEVELS d'app.js (importer)
-        const LEVELS = [
-            { level: 1, name: 'Débutant sur glace', minPoints: 0, maxPoints: 99, badge: '⛸️' },
-            { level: 2, name: 'Patineur Amateur', minPoints: 100, maxPoints: 299, badge: '🥉' },
-            { level: 3, name: 'Explorateur Glacé', minPoints: 300, maxPoints: 599, badge: '🥈' },
-            { level: 4, name: 'Collectionneur', minPoints: 600, maxPoints: 999, badge: '🥇' },
-            { level: 5, name: 'Maître des Patinoires', minPoints: 1000, maxPoints: 1999, badge: '👑' },
-            { level: 6, name: 'Légende des Glaces', minPoints: 2000, maxPoints: 9999, badge: '🏆' }
-        ];
-
-        // Calculer le niveau actuel
-        let currentLevel = LEVELS[0];
-        for (let i = LEVELS.length - 1; i >= 0; i--) {
-            if (points >= LEVELS[i].minPoints) {
-                currentLevel = LEVELS[i];
-                break;
-            }
-        }
-
-        // Calculer la progression
-        const nextLevel = LEVELS.find(level => level.level === currentLevel.level + 1);
-        let progressPercent = 100;
-        let progressText = `${points} pts`;
-
-        if (nextLevel) {
-            const pointsInCurrentLevel = points - currentLevel.minPoints;
-            const totalPointsNeededForNextLevel = nextLevel.minPoints - currentLevel.minPoints;
-            progressPercent = Math.floor((pointsInCurrentLevel / totalPointsNeededForNextLevel) * 100);
-            progressText = `${pointsInCurrentLevel}/${totalPointsNeededForNextLevel}`;
-        }
-
-        // Créer/Mettre à jour le bouton
-        const levelButton = findOrCreateLevelButton();
-        levelButton.innerHTML = `
-            <div class="level-info">
-                <div class="level-emoji">${currentLevel.badge}</div>
-                <div class="level-name">${currentLevel.name}</div>
-            </div>
-            <div class="progress-container-compact">
-                <div class="progress-bar-container-compact">
-                    <div class="progress-bar" style="width: ${progressPercent}%"></div>
-                </div>
-                <div class="progress-text-centered">${progressText}</div>
-            </div>
-        `;
-
-        console.log('Niveau mis à jour:', currentLevel.name, '- Points:', points, '- Progression:', progressPercent + '%');
-
-        // Mettre à jour l'affichage des points aussi
-        await updatePointsDisplay();
-
-    } catch (error) {
-        console.error('Erreur mise à jour niveau header:', error);
-    }
-}
-
-// === FONCTION DE NETTOYAGE - EXÉCUTER UNE FOIS ===
-function cleanupDuplicateLevelButtons() {
-    const levelButtons = document.querySelectorAll('[class*="level-progress"], [class*="level"], [id*="level"]');
-    console.log('Trouvé', levelButtons.length, 'boutons niveau');
-
-    if (levelButtons.length > 1) {
-        // Garder le premier, supprimer les autres
-        for (let i = 1; i < levelButtons.length; i++) {
-            console.log('Suppression du doublon', i);
-            levelButtons[i].remove();
-        }
-    }
-}
-
-// === FONCTION POUR CRÉER/METTRE À JOUR LE BOUTON POINTS ===
-function createPointsButton() {
-    let pointsButton = document.getElementById('header-points-button');
-    
-    if (!pointsButton) {
-        console.log('Création du bouton points...');
-        // Créer le bouton s'il n'existe pas
-        pointsButton = document.createElement('div');
-        pointsButton.id = 'header-points-button';
-        pointsButton.className = 'points-display-button';
-
-        // L'insérer à côté du bouton de niveau
-        const levelButton = findOrCreateLevelButton();
-        if (levelButton && levelButton.parentElement) {
-            // Insérer après le bouton de niveau
-            levelButton.parentElement.insertBefore(pointsButton, levelButton.nextSibling);
-        } else {
-            // Plan B : l'insérer dans le header
-            const headerButtons = document.getElementById('dynamic-header-buttons');
-            if (headerButtons) {
-                headerButtons.appendChild(pointsButton);
-            }
-        }
-    }
-
-    return pointsButton;
-}
-
-// === FONCTION POUR METTRE À JOUR L'AFFICHAGE DES POINTS ===
-async function updatePointsDisplay() {
-    const user = auth.currentUser;
-    if (!user) return;
-
-    try {
-        console.log('Mise à jour du bouton points...');
-        
-        // Récupérer les points de l'utilisateur
-        const userDoc = await getDoc(doc(db, 'users', user.uid));
-        const userData = userDoc.exists() ? userDoc.data() : {};
-        const points = userData.points || 0;
-
-        // Formater les points avec séparateur de milliers
-        const formattedPoints = points.toLocaleString('fr-FR');
-
-        // Créer/Mettre à jour le bouton
-        const pointsButton = createPointsButton();
-        pointsButton.innerHTML = `
-            <div class="points-icon">⭐</div>
-            <div class="points-info">
-                <div class="points-label">Points</div>
-                <div class="points-value">${formattedPoints}</div>
-            </div>
-        `;
-
-        console.log('Points affichés:', formattedPoints);
-
-    } catch (error) {
-        console.error('Erreur mise à jour points:', error);
-    }
-}
 
 
 
 // Fonction de nettoyage globale
 function cleanup() {
     // Nettoyer les listeners Firebase
-    if (pointsListener) {
-        pointsListener();
-        pointsListener = null;
-    }
-    
     if (userProfileListener) {
         userProfileListener();
         userProfileListener = null;
@@ -2320,9 +2145,6 @@ window.showNotification = showNotification;
 window.closeAllModals = closeAllModals;
 window.saveUserRinksToFirebase = saveUserRinksToFirebase;
 window.loadUserRinksFromFirebase = loadUserRinksFromFirebase;
-window.updateHeaderLevelDisplay = updateHeaderLevelDisplay;
-window.updatePointsDisplay = updatePointsDisplay;
-
 // Nettoyer avant la fermeture de la page
 window.addEventListener('beforeunload', cleanup);
 // ========== UPLOAD PHOTO DE PROFIL ==========
@@ -2365,26 +2187,97 @@ async function uploadProfilePhoto(file, previewElement, removeBtn) {
     }
 }
 
+
 async function removeProfilePhoto(previewElement, removeBtn) {
-    const user = auth.currentUser;
-    if (!user || !confirm('Supprimer votre photo ?')) return;
+  const user = auth.currentUser;
+  if (!user) return;
+  
+  const confirmed = await showCustomConfirm(
+    'Supprimer votre photo ?',
+    'Vous pourrez toujours en télécharger une nouvelle plus tard.'
+  );
+  
+  if (!confirmed) return;
+  
+  try {
+    const userDocRef = doc(db, 'users', user.uid);
+    await updateDoc(userDocRef, { photoURL: null });
     
-    try {
-        const userDocRef = doc(db, 'users', user.uid);
-        await updateDoc(userDocRef, { photoURL: null });
-        
-        const initials = (user.displayName || user.email).split(' ').map(w => w.charAt(0).toUpperCase()).join('').substring(0, 2);
-        previewElement.innerHTML = initials;
-        previewElement.className = 'w-20 h-20 rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 flex items-center justify-center text-white font-bold text-2xl';
-        if (removeBtn) removeBtn.style.display = 'none';
-        
-        updateAvatar(user.displayName || user.email, user.email);
-        
-        showNotification('Photo supprimée', 'success');
-    } catch (error) {
-        console.error('Erreur suppression:', error);
-    }
+    const initials = (user.displayName || user.email)
+      .split(' ')
+      .map(w => w.charAt(0).toUpperCase())
+      .join('')
+      .substring(0, 2);
+    
+    previewElement.innerHTML = initials;
+    previewElement.className = 'w-20 h-20 rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 flex items-center justify-center text-white font-bold text-2xl';
+    
+    if (removeBtn) removeBtn.style.display = 'none';
+    
+    updateAvatar(user.displayName || user.email, user.email);
+    showNotification('Photo supprimée', 'success');
+  } catch (error) {
+    console.error('Erreur suppression:', error);
+    showNotification('❌ Erreur', 'error');
+  }
 }
 
 
+
 console.log('✅ main.js chargé et configuré');
+
+
+// ========================================
+// FONCTION AFFICHAGE SECTIONS - VERSION FINALE
+// ========================================
+window.showSection = function(sectionName) {
+    console.log('🔄 Affichage section:', sectionName);
+    
+    // 1. Masquer TOUTES les sections
+    document.querySelectorAll('.content-section').forEach(section => {
+        section.style.display = 'none';
+    });
+    
+    // 2. Retirer active de tous les boutons
+    document.querySelectorAll('.nav-btn, .tab-button').forEach(btn => {
+        btn.classList.remove('active', 'tab-active');
+    });
+    
+    // 3. Afficher la section demandée
+    const targetSection = document.getElementById(`${sectionName}-section`);
+    if (targetSection) {
+        targetSection.style.display = 'block';
+        
+        // Initialiser le covoiturage si nécessaire
+        if (sectionName === 'carpooling' && window.initializeCarpooling) {
+            setTimeout(() => window.initializeCarpooling(), 100);
+        }
+        
+        // Réinitialiser la carte Leaflet si nécessaire
+        if (sectionName === 'map' && window.map) {
+            setTimeout(() => {
+                window.map.invalidateSize();
+                console.log('🗺️ Carte Leaflet réinitialisée');
+            }, 100);
+        }
+    } else {
+        console.error(`❌ Section introuvable: ${sectionName}-section`);
+    }
+    
+    // 4. Activer le bouton correspondant
+    const matchingBtn = Array.from(document.querySelectorAll('.nav-btn, .tab-button')).find(btn => {
+        const onclick = btn.getAttribute('onclick');
+        const dataTab = btn.getAttribute('data-tab');
+        return onclick?.includes(`'${sectionName}'`) || dataTab === sectionName;
+    });
+    
+    if (matchingBtn) {
+        matchingBtn.classList.add(matchingBtn.classList.contains('tab-button') ? 'tab-active' : 'active');
+    }
+    
+    console.log(`✅ Section "${sectionName}" affichée`);
+};
+
+console.log('✅ Fonction showSection chargée');
+
+

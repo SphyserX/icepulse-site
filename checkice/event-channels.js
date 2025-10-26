@@ -1,7 +1,7 @@
 // event-channels.js - SYSTÈME DE CANAL DE DIFFUSION POUR ÉVÉNEMENTS
 import { db, auth } from './firebase.js';
 import { collection, doc as firestoreDoc, getDoc, setDoc, updateDoc, deleteDoc, addDoc, query, where, orderBy, getDocs, onSnapshot, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js';
-
+import { showCustomConfirm, showCustomPrompt } from './utils.js';
 /* ========================================
    📋 CONFIGURATION
 ======================================== */
@@ -735,10 +735,9 @@ class EventChannelsSystem {
         }
     }
 
-    async editMessage(messageId) {
-        const newText = prompt('Modifier le message :');
+    async editMessage(messageId, currentText) {
+        const newText = await showCustomPrompt('Modifier le message', currentText);
         if (!newText || !newText.trim()) return;
-
         try {
             const messageRef = firestoreDoc(db, 'eventChannels', this.activeChannelId, 'messages', messageId);
             await updateDoc(messageRef, {

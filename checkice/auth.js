@@ -152,8 +152,6 @@ async function createUserProfile(user, additionalData) {
             username: additionalData.displayName || user.displayName || user.email.split('@')[0],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            points: 0,
-            level: 1,
             myRinks: [],
             visibility: 'public',
             isPublic: true,  // ← ✅ AJOUT OBLIGATOIRE - Tous les utilisateurs sont publics par défaut

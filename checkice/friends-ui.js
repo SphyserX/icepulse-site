@@ -1,4 +1,4 @@
-// friends-ui.js - DESIGN PROFESSIONNEL MODERNE THÈME BLEU COMPLET CORRIGÉ
+// friends-ui.js - VERSION CORRIGÉE SANS ERREURS
 import { searchUsers, sendFriendRequest, respondToFriendRequest, getUserFriends, getPendingFriendRequests, getPublicProfile, getUserNotifications, updateUserPresence } from './friends-system.js';
 import { auth } from './firebase.js';
 
@@ -119,17 +119,6 @@ function setupModernInterface() {
                 </span>
                 Mes amis
             </button>
-            
-            <button class="tab-btn" data-tab="global" id="tab-global">
-                <span class="tab-icon">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"/>
-                        <path d="M2 12h20"/>
-                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-                    </svg>
-                </span>
-                Global
-            </button>
         </div>
 
         <!-- Contenu des onglets -->
@@ -143,12 +132,6 @@ function setupModernInterface() {
             <div class="tab-panel" id="panel-friends">
                 <div id="friends-container" class="modern-list-container">
                     <!-- Amis chargés ici -->
-                </div>
-            </div>
-            
-            <div class="tab-panel" id="panel-global">
-                <div id="global-container" class="modern-list-container">
-                    <!-- Classement global chargé ici -->
                 </div>
             </div>
         </div>
@@ -232,7 +215,7 @@ function setupSearchEvents() {
     });
 }
 
-// AFFICHAGE RÉSULTATS RECHERCHE AVEC BOUTON VOIR PROFIL
+// AFFICHAGE RÉSULTATS RECHERCHE
 function displaySearchResults(users) {
     const searchResults = document.getElementById('search-results');
     if (!searchResults) return;
@@ -251,7 +234,6 @@ function displaySearchResults(users) {
         `;
     } else {
         searchResults.innerHTML = users.map(user => {
-            // Vérifier si le profil est public (par défaut true si non défini)
             const isProfilePublic = user.profilePublic !== false;
             
             return `
@@ -264,10 +246,6 @@ function displaySearchResults(users) {
                     </div>
                     <div class="user-info">
                         <div class="user-name">${user.displayName || user.username || user.email.split('@')[0]}</div>
-                        <div class="user-meta">
-                            <span class="user-level">Niveau ${user.level || 1}</span>
-                            <span class="user-points">${user.points || 0} pts</span>
-                        </div>
                         ${user.username ? `<div class="user-username">@${user.username}</div>` : ''}
                     </div>
                     <div style="display: flex; gap: 8px; align-items: center;">
@@ -279,7 +257,7 @@ function displaySearchResults(users) {
                                 </svg>
                             </button>
                         ` : `
-                            <div style="padding: 6px 12px; background: #f3f4f6; border-radius: 6px; color: #6b7280; font-size: 12px; display: flex; align-items: center; gap: 4px;">
+                            <div style="padding: 6px 12px; background: #f3f4f6; border-radius: 6px; color: #6b7280; font-size: 12px;">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                                     <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
@@ -359,10 +337,6 @@ function displayFriendRequests(requests) {
             </div>
             <div class="user-info">
                 <div class="user-name">${request.sender.displayName || request.sender.username || request.sender.email.split('@')[0]}</div>
-                <div class="user-meta">
-                    <span class="user-level">Niveau ${request.sender.level || 1}</span>
-                    <span class="user-points">${request.sender.points || 0} pts</span>
-                </div>
                 <div class="request-time">${getTimeAgo(request.createdAt.toDate ? request.createdAt.toDate() : request.createdAt)}</div>
             </div>
             <div class="request-actions">
@@ -421,10 +395,6 @@ function displayFriendsList(friends) {
             </div>
             <div class="user-info">
                 <div class="user-name">${friend.displayName || friend.username || friend.email.split('@')[0]}</div>
-                <div class="user-meta">
-                    <span class="user-level">Niveau ${friend.level || 1}</span>
-                    <span class="user-points">${friend.points || 0} pts</span>
-                </div>
                 <div class="user-status-text">${friend.isOnline ? 'En ligne' : getLastSeenText(friend.lastSeen)}</div>
             </div>
             <div class="friend-actions">
@@ -444,7 +414,7 @@ function displayFriendsList(friends) {
     `).join('');
 }
 
-// FONCTIONS UTILITAIRES - THEME BLEU
+// FONCTIONS UTILITAIRES
 function getAvatarColorBlue(email) {
     const blueColors = [
         'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
@@ -495,7 +465,6 @@ window.sendFriendRequestUI = async function(targetUserId, targetName) {
         await sendFriendRequest(targetUserId);
         console.log(`✅ Demande envoyée à ${targetName}`);
         
-        // Nettoyer la recherche
         const searchResults = document.getElementById('search-results');
         const searchInput = document.getElementById('friend-search-input');
         if (searchResults) searchResults.style.display = 'none';
@@ -515,7 +484,6 @@ window.respondToFriendRequestUI = async function(requestId, action) {
         const message = action === 'accept' ? '✅ Ami ajouté !' : 'ℹ️ Demande refusée';
         console.log(message);
         
-        // Recharger les données
         await loadTabData('requests');
         await loadTabData('friends');
         
@@ -548,156 +516,10 @@ async function loadTabData(tab) {
                 const friends = await getUserFriends();
                 displayFriendsList(friends);
                 break;
-                
-            case 'global':
-                displayGlobalPlaceholder();
-                break;
         }
     } catch (error) {
         console.error(`Erreur chargement ${tab}:`, error);
     }
-}
-
-function displayGlobalPlaceholder() {
-    const container = document.getElementById('global-container');
-    if (!container) return;
-
-    container.innerHTML = `
-        <div class="loading-state text-center py-12">
-            <div class="loading-spinner-large mx-auto mb-4"></div>
-            <p class="text-gray-600">Chargement du classement global...</p>
-        </div>
-    `;
-
-    loadRealGlobalRanking();
-}
-
-async function loadRealGlobalRanking() {
-    const container = document.getElementById('global-container');
-    if (!container) return;
-
-    try {
-        console.log('🏆 Chargement du classement global depuis Firebase...');
-        
-        const { db } = await import('./firebase.js');
-        const { collection, query, orderBy, limit, getDocs } = await import('https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js');
-
-        const usersRef = collection(db, 'users');
-        const topUsersQuery = query(
-            usersRef, 
-            orderBy('points', 'desc'), 
-            limit(10)
-        );
-
-        const querySnapshot = await getDocs(topUsersQuery);
-        
-        if (querySnapshot.empty) {
-            displayEmptyGlobalRanking();
-            return;
-        }
-
-        const topUsers = [];
-        querySnapshot.forEach((doc) => {
-            const userData = doc.data();
-            topUsers.push({
-                id: doc.id,
-                ...userData
-            });
-        });
-
-        console.log(`📊 ${topUsers.length} utilisateurs chargés pour le classement global`);
-        displayRealGlobalRanking(topUsers);
-
-    } catch (error) {
-        console.error('Erreur lors du chargement du classement global:', error);
-        displayGlobalError(error);
-    }
-}
-
-function displayRealGlobalRanking(users) {
-    const container = document.getElementById('global-container');
-    if (!container) return;
-
-    container.innerHTML = `
-        <div class="global-ranking-header mb-6">
-            <h3 class="text-xl font-bold text-gray-800 mb-2">🏆 Classement Global CHECKICE</h3>
-            <p class="text-gray-600">Top ${users.length} des explorateurs</p>
-        </div>
-        <div class="global-list">
-            ${users.map((user, index) => `
-                <div class="modern-user-card global-user-card">
-                    <div class="global-rank ${index < 3 ? 'top-rank' : ''}">#${index + 1}</div>
-                    <div class="user-avatar">
-                        <div class="avatar-circle" style="background: ${getAvatarColorBlue(user.email)}">
-                            ${getInitials(user.displayName || user.username || user.email)}
-                        </div>
-                        <div class="user-status ${user.isOnline ? 'online' : 'offline'}"></div>
-                    </div>
-                    <div class="user-info flex-1">
-                        <div class="user-name">${user.displayName || user.username || user.email.split('@')[0]}</div>
-                        <div class="user-meta">
-                            <span class="user-level">Niveau ${user.level || 1}</span>
-                            <span class="user-points-highlight">${user.points || 0} pts</span>
-                        </div>
-                    </div>
-                    <div class="global-actions">
-                        ${user.id !== auth.currentUser?.uid ? `
-                            <button class="modern-action-btn-small-blue" onclick="window.sendFriendRequestUI('${user.id}', '${user.displayName || user.username || user.email}')" title="Ajouter ami">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                                    <circle cx="9" cy="7" r="4"/>
-                                    <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
-                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                                </svg>
-                            </button>
-                        ` : `
-                            <span class="current-user-badge">C'est vous!</span>
-                        `}
-                    </div>
-                </div>
-            `).join('')}
-        </div>
-    `;
-}
-
-function displayEmptyGlobalRanking() {
-    const container = document.getElementById('global-container');
-    if (!container) return;
-
-    container.innerHTML = `
-        <div class="empty-state">
-            <div class="empty-icon">
-                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <circle cx="12" cy="12" r="10"/>
-                    <path d="M2 12h20"/>
-                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-                </svg>
-            </div>
-            <h3>🏆 Classement Global</h3>
-            <p>Aucun utilisateur dans le classement pour le moment.</p>
-        </div>
-    `;
-}
-
-function displayGlobalError(error) {
-    const container = document.getElementById('global-container');
-    if (!container) return;
-
-    container.innerHTML = `
-        <div class="error-state text-center py-12">
-            <div class="error-icon mb-4">
-                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-red-500">
-                    <path d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
-                </svg>
-            </div>
-            <h3 class="text-lg font-bold text-gray-800 mb-2">Erreur de chargement</h3>
-            <p class="text-gray-600 mb-4">Impossible de charger le classement global.</p>
-            <p class="text-sm text-gray-500">${error.message}</p>
-            <button class="modern-action-btn-blue mt-4" onclick="loadRealGlobalRanking()">
-                Réessayer
-            </button>
-        </div>
-    `;
 }
 
 function updateRequestsBadge(count) {
@@ -736,7 +558,6 @@ function setupNotifications() {
     console.log('🔔 Notifications système social configurées');
 }
 
-// ✅ FONCTION CHAT CORRIGÉE
 window.openChatModal = function(friendName, friendId) {
     console.log('💬 Tentative ouverture chat:', {friendName, friendId});
     
@@ -750,7 +571,6 @@ window.openChatModal = function(friendName, friendId) {
         window.friendsChat.openFriendChat(friendId, friendName);
     } else {
         console.error('❌ Système de chat non initialisé');
-        
         if (typeof showNotification === 'function') {
             showNotification('Le système de chat se charge...', 'info');
         } else {
@@ -759,10 +579,7 @@ window.openChatModal = function(friendName, friendId) {
     }
 };
 
-console.log('👥 Interface sociale moderne chargée !');
-
-// ========== MODAL PROFIL UTILISATEUR - VERSION FINALE AVEC PSEUDO CENTRÉ ==========
-
+// MODAL PROFIL UTILISATEUR
 window.showUserProfile = async function(userId) {
     console.log('👤 Affichage profil:', userId);
     
@@ -781,31 +598,19 @@ window.showUserProfile = async function(userId) {
         
         const userData = userDoc.data();
         
-        // Calculer la date d'inscription
         const memberSince = userData.createdAt ? new Date(userData.createdAt.toDate ? userData.createdAt.toDate() : userData.createdAt) : null;
         const memberSinceText = memberSince ? memberSince.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }) : 'Inconnu';
         
-        // Points de l'utilisateur
-        const userPoints = userData.points || 0;
-        
-        // Récupérer les patinoires préférées
         const favoriteRinks = userData.myRinks || [];
         let favoriteRinksHTML = '';
         
         if (favoriteRinks.length > 0) {
-            // Charger toutes les patinoires depuis Firebase
             const rinksSnapshot = await getDocs(collection(db, 'rinks'));
             const rinksMap = {};
             rinksSnapshot.forEach(doc => {
                 rinksMap[doc.id] = doc.data().name;
             });
             
-            console.log('🔍 Debug patinoires:', {
-                myRinks: favoriteRinks,
-                rinksMap: rinksMap
-            });
-            
-            // Vérifier si myRinks contient des IDs ou des noms
             const rinkNames = favoriteRinks.map(rink => {
                 if (typeof rink === 'string' && !rinksMap[rink]) {
                     return rink;
@@ -837,48 +642,33 @@ window.showUserProfile = async function(userId) {
         
         modal.innerHTML = `
             <div class="rink-details-content" style="max-width: 600px; position: relative;">
-                <!-- Bouton fermer EN HAUT À DROITE -->
                 <button class="rink-details-close" onclick="closeUserProfileModal()" style="position: absolute; top: 16px; right: 16px; z-index: 10;">×</button>
                 
-                <!-- Header avec layout 2 colonnes -->
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; padding: 24px; border-bottom: 1px solid #e5e7eb;">
-                    <!-- Colonne gauche : Avatar, Nom CENTRÉ, Points, Date inscription -->
                     <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                        <!-- Avatar -->
                         <div style="width: 80px; height: 80px; border-radius: 50%; background: ${avatarColor}; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: bold; color: white; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); margin-bottom: 16px;">
                             ${initials}
                         </div>
                         
-                        <!-- Pseudo CENTRÉ -->
                         <h2 class="rink-details-title" style="margin: 0 0 16px 0; text-align: center;">${displayName}</h2>
-                        
-                        <!-- Badge Points doré stylé -->
-                        <div style="display: flex; align-items: center; justify-content: center; gap: 6px; padding: 6px 12px; background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); border-radius: 20px; box-shadow: 0 2px 8px rgba(251, 191, 36, 0.3); margin-bottom: 12px;">
-                            <span style="font-size: 16px;">⭐</span>
-                            <span style="color: white; font-weight: 600; font-size: 14px;">${userPoints} pts</span>
-                        </div>
-                        
-                        <!-- Date d'inscription -->
+
                         <div style="display: flex; align-items: center; justify-content: center; gap: 6px; color: #6b7280; font-size: 12px;">
                             <span>📅</span>
                             <span>Membre depuis ${memberSinceText}</span>
                         </div>
                     </div>
 
-                    
-                    <!-- Colonne droite : Patinoires préférées avec scrollbar stylée -->
                     <div style="display: flex; flex-direction: column;">
                         <div style="display: flex; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid #3b82f6;">
                             <span style="font-size: 18px; margin-right: 8px;">⭐</span>
                             <span style="font-weight: 600; color: #1e40af; font-size: 15px;">Patinoires préférées</span>
                         </div>
-                        <div style="max-height: 200px; overflow-y: auto; padding-right: 8px; scrollbar-width: thin; scrollbar-color: #3b82f6 #e5e7eb;">
+                        <div style="max-height: 200px; overflow-y: auto; padding-right: 8px;">
                             ${favoriteRinksHTML}
                         </div>
                     </div>
                 </div>
                 
-                <!-- Bio en bas avec plus d'espace -->
                 ${userData.bio ? `
                     <div style="padding: 24px;">
                         <div style="display: flex; align-items: center; margin-bottom: 12px;">
@@ -901,7 +691,6 @@ window.showUserProfile = async function(userId) {
                     </div>
                 `}
                 
-                <!-- Actions -->
                 <div class="rink-details-actions" style="padding: 0 24px 24px 24px;">
                     ${userId !== auth.currentUser?.uid ? `
                         <button class="rink-action-btn rink-action-primary" onclick="sendRealFriendRequest('${userId}', '${displayName.replace(/'/g, "\\'")}'); closeUserProfileModal();">
@@ -913,27 +702,6 @@ window.showUserProfile = async function(userId) {
                     </button>
                 </div>
             </div>
-            
-            <style>
-                /* Scrollbar stylée pour WebKit (Chrome, Safari) */
-                #user-profile-modal div::-webkit-scrollbar {
-                    width: 6px;
-                }
-                
-                #user-profile-modal div::-webkit-scrollbar-track {
-                    background: #e5e7eb;
-                    border-radius: 10px;
-                }
-                
-                #user-profile-modal div::-webkit-scrollbar-thumb {
-                    background: #3b82f6;
-                    border-radius: 10px;
-                }
-                
-                #user-profile-modal div::-webkit-scrollbar-thumb:hover {
-                    background: #2563eb;
-                }
-            </style>
         `;
         
         document.body.appendChild(modal);
@@ -962,7 +730,6 @@ window.closeUserProfileModal = function() {
 
 async function sendRealFriendRequest(userId, userName) {
     try {
-        const { sendFriendRequest } = await import('./friends-system.js');
         await sendFriendRequest(userId);
         
         if (typeof showNotification === 'function') {
@@ -977,3 +744,5 @@ async function sendRealFriendRequest(userId, userName) {
         }
     }
 }
+
+console.log('👥 Interface sociale moderne chargée !');

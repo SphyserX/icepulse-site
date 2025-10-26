@@ -104,39 +104,11 @@ body
             0%, 100% { opacity: 1; }
             50% { opacity: 0.7; }
         }
-        
-        .checklist-item {
-            transition: all 0.3s ease;
-            border: 1px solid transparent;
-        }
-        
-        .checklist-item:hover {
-            background: rgba(255, 255, 255, 0.95);
-            border-color: rgba(59, 130, 246, 0.2);
-            transform: translateX(4px);
-        }
-        
-        .checklist-item.checked {
-            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-            border-color: rgba(59, 130, 246, 0.3);
-        }
-        
-        .checklist-item.checked .check-circle {
-            background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
-            color: white;
-            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
-        }
-        
+
         .check-circle {
             transition: all 0.3s ease;
         }
-        
-        .points-badge {
-            background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
-            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
-            animation: glow 3s ease-in-out infinite alternate;
-        }
-        
+
         @keyframes glow {
             from { box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3); }
             to { box-shadow: 0 6px 20px rgba(245, 158, 11, 0.5); }
@@ -369,11 +341,6 @@ body
             color: white !important;
         }
 
-        
-        .level-progress {
-            background: linear-gradient(90deg, #10b981 0%, #34d399 50%, #6ee7b7 100%);
-        }
-        
         .rink-card {
             background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 100%);
             backdrop-filter: blur(15px);
@@ -479,23 +446,7 @@ body
         }
         
         /* Amélioration de la recherche */
-        .search-suggestions {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 0 0 16px 16px;
-            box-shadow: 0 10px 40px rgba(59, 130, 246, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-top: none;
-            max-height: 300px;
-            overflow-y: auto;
-            z-index: 1000;
-            display: none;
-        }
-        
+
         .search-suggestion {
             padding: 12px 16px;
             cursor: pointer;
@@ -638,7 +589,6 @@ body
     to { transform: translateX(100%); opacity: 0; }
 }
 
-
 /* Menus header plus grands et plus confortables */
 #header-rinks-menu {
     max-height: 70vh !important; /* 70% de la hauteur de l'écran */
@@ -746,7 +696,6 @@ body
   }
 }
 
-
 /* ✅ AGRANDIR LA MODALE "MES PATINOIRES" */
 #rinks-modal .modal-content {
   max-width: 800px !important;
@@ -776,7 +725,6 @@ body
   }
 }
 
-
 /* ✅ AGRANDIR LA MODALE "MON COMPTE" */
 #account-settings-modal .modal-content {
   max-width: 800px !important;
@@ -804,8 +752,6 @@ body
     padding: 1.5rem !important;
   }
 }
-
-
 
 /* ✅ STYLE PILLS MODERNE - THÈME BLEU CORRIGÉ */
 
@@ -902,32 +848,11 @@ body
   z-index: 5 !important;
 }
 
-
 /* ✅ NOUVEAU CSS POUR LA CHECKLIST DYNAMIQUE */
 
 /* Animation d'apparition des items */
-.checklist-item-dynamic {
-    opacity: 0;
-    transform: translateY(20px);
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    border: 2px solid transparent;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 100%);
-    backdrop-filter: blur(10px);
-    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.1);
-}
-
-.checklist-item-dynamic:hover {
-    border-color: rgba(59, 130, 246, 0.3);
-    box-shadow: 0 8px 30px rgba(59, 130, 246, 0.2);
-    transform: translateY(-4px);
-}
 
 /* Items visitées */
-.checklist-item-dynamic.checked {
-    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-    border-color: rgba(34, 197, 94, 0.3);
-    opacity: 0.9;
-}
 
 /* Cercle de validation */
 .check-circle-dynamic {
@@ -939,16 +864,6 @@ body
 }
 
 /* Badge de points */
-.points-badge-dynamic {
-    background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
-    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
-    animation: glow 2s ease-in-out infinite alternate;
-    color: white;
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 10px;
-    font-weight: bold;
-}
 
 /* Animation des points gagnés */
 @keyframes pointsEarned {
@@ -998,10 +913,7 @@ body
 
 /* Responsive */
 @media (max-width: 768px) {
-    .checklist-item-dynamic {
-        padding: 1.25rem;
-    }
-    
+
     .check-circle-dynamic {
         margin-right: 1rem;
     }
@@ -1012,22 +924,7 @@ body
     }
 }
 
-
 /* ✅ ANIMATION OPTIMISÉE CHECKLIST DYNAMIQUE */
-.checklist-item-dynamic {
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-}
-
-.checklist-item-dynamic:hover .check-circle-dynamic {
-    transform: scale(1.05);
-    transition: transform 0.1s ease-out;
-}
-
-.checklist-item-dynamic.checked {
-    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%) !important;
-    border-color: rgba(34, 197, 94, 0.3) !important;
-    transition: all 0.2s ease-out !important;
-}
 
 /* Animation des points encore plus rapide */
 @keyframes pointsEarned {
@@ -1053,7 +950,6 @@ body
 .check-circle-dynamic:active {
     transform: scale(0.95);
 }
-
 
 /* ✅ STYLES POUR LES SECTIONS SÉPARÉES */
 .section-header {
@@ -1100,7 +996,6 @@ body
     background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
 }
 
-
 /* ✨ AJOUTER À LA FIN DE main.css */
 
 /* Animations niveau up */
@@ -1111,11 +1006,6 @@ body
 }
 
 /* Amélioration barre de progression */
-.level-progress {
-    background: linear-gradient(90deg, #10b981 0%, #34d399 50%, #6ee7b7 100%);
-    box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
-    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-}
 
 /* Animation points mise à jour */
 .updated {
@@ -1169,47 +1059,9 @@ body
     }
 }
 
-
 /* ✨ LAYOUT MODIFIÉ DU BOUTON DE NIVEAU */
-.level-progress-button {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(10px);
-  padding: 12px 16px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  cursor: default;
-  min-width: 280px;
-  height: 60px;
-  font-family: 'Inter', sans-serif;
-}
 
 /* Conteneur pour logo + nom du niveau (côté gauche) */
-.level-info {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  min-width: 70px;
-}
-
-.level-emoji {
-  font-size: 24px;
-  line-height: 1;
-}
-
-.level-name {
-  font-size: 12px;
-  font-weight: 600;
-  color: #374151;
-  text-align: center;
-  line-height: 1.2;
-  max-width: 70px;
-}
 
 /* Conteneur pour barre de progression + score (côté droit) */
 .progress-container {
@@ -1248,26 +1100,11 @@ body
 
 /* Responsive */
 @media (max-width: 640px) {
-  .level-progress-button {
-    min-width: 240px;
-    height: 55px;
-    gap: 12px;
-    padding: 10px 14px;
-  }
-  
-  .level-emoji {
-    font-size: 20px;
-  }
-  
-  .level-name {
-    font-size: 11px;
-  }
-  
+
   .progress-text {
     font-size: 13px;
   }
 }
-
 
 /* ✨ HEADER RÉORGANISÉ - SUPPRIME LE STREAK ET HARMONISE TOUT */
 
@@ -1294,45 +1131,8 @@ body
 }
 
 /* ✨ BOUTON DE NIVEAU COMPACT */
-.level-progress-button-compact {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(10px);
-  padding: 12px 16px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  cursor: default;
-  height: 48px;
-  font-family: 'Inter', sans-serif;
-  min-width: 180px;
-}
 
 /* Logo + nom du niveau (gauche) */
-.level-progress-button-compact .level-info {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  min-width: 60px;
-}
-
-.level-progress-button-compact .level-emoji {
-  font-size: 20px;
-  line-height: 1;
-}
-
-.level-progress-button-compact .level-name {
-  font-size: 11px;
-  font-weight: 600;
-  color: #374151;
-  text-align: center;
-  line-height: 1.2;
-  max-width: 60px;
-}
 
 /* Container pour barre + score (droite) */
 .progress-container-compact {
@@ -1441,11 +1241,6 @@ body
   box-shadow: 0 4px 15px rgba(59, 130, 246, 0.25);
 }
 
-.level-progress-button-compact:hover {
-  border-color: rgba(59, 130, 246, 0.4);
-  background: rgba(255, 255, 255, 0.95);
-}
-
 /* ✅ SUPPRIMER LE BOUTON STREAK */
 .streak-badge,
 .hidden.md\:flex .streak-fire {
@@ -1461,7 +1256,6 @@ body
   font-size: 14px;
   margin: 0;
 }
-
 
 /* groupe de boutons dynamiques */
 .header-buttons{
@@ -1488,29 +1282,6 @@ body
 }
 
 /* ✨ BOUTON POINTS JAUNE */
-.points-display-button {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
-    backdrop-filter: blur(10px);
-    padding: 12px 16px;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
-    border: 1px solid rgba(245, 158, 11, 0.4);
-    cursor: default;
-    height: 48px;
-    font-family: 'Inter', sans-serif;
-    min-width: 120px;
-    color: white;
-    transition: all 0.3s ease;
-}
-
-.points-display-button:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
-    background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
-}
 
 /* Icône étoile */
 .points-icon {
@@ -1565,11 +1336,7 @@ body
 
 /* Responsive */
 @media (max-width: 640px) {
-    .points-display-button {
-        min-width: 100px;
-        padding: 10px 14px;
-    }
-    
+
     .points-icon {
         font-size: 18px;
     }
@@ -2480,7 +2247,6 @@ body
   }
 }
 
-
 /* ✅ STYLES RÉSEAU SOCIAL */
 .friends-search-container {
   position: relative;
@@ -2586,7 +2352,6 @@ body
       width: 100% !important;
     }
 
-
     /* Corrections et améliorations CSS */
 
 /* Empêcher le scroll quand une modale est ouverte */
@@ -2661,16 +2426,7 @@ body.modal-open {
 
 /* Optimisation pour mobile */
 @media (max-width: 640px) {
-    .level-progress-button-compact {
-        min-width: 160px;
-        padding: 8px 12px;
-    }
-    
-    .points-display-button {
-        min-width: 100px;
-        padding: 8px 12px;
-    }
-    
+
     .header-buttons {
         gap: 0.5rem;
     }
@@ -2703,7 +2459,6 @@ body.modal-open {
 .modal label:hover {
     z-index: 3;
 }
-
 
 /* ===== SYSTÈME SOCIAL CHECKICE - DESIGN HARMONISÉ ===== */
 
@@ -3280,7 +3035,6 @@ body.modal-open {
     }
 }
 
-
 /* ===== SYSTÈME SOCIAL MODERNE - THÈME BLEU ===== */
 
 /* Icônes statistiques bleues */
@@ -3426,7 +3180,6 @@ body.modal-open {
     margin-left: 0.5rem;
     animation: pulse 2s infinite;
 }
-
 
 /* ===== SYSTÈME SOCIAL MODERNE - THÈME BLEU ===== */
 .stat-icon-blue {
@@ -3889,7 +3642,6 @@ body.modal-open {
     }
 }
 
-
 /* ========================================
    📢 CANAUX D'ÉVÉNEMENTS
 ======================================== */
@@ -3954,4 +3706,356 @@ body.modal-open {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* Suggestions de recherche principale */
+
+.search-suggestions.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.search-suggestions::-webkit-scrollbar {
+    width: 8px;
+}
+
+.search-suggestions::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+}
+
+.search-suggestions::-webkit-scrollbar-thumb {
+    background: #94a3b8;
+    border-radius: 4px;
+}
+
+.search-suggestions::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
+}
+
+/* ========================================
+   BARRE DE RECHERCHE MODERNE - STYLE CHECKICE
+   ======================================== */
+
+/* Container principal des suggestions */
+.search-suggestions {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(59, 130, 246, 0.15);
+    border-radius: 20px;
+    margin-top: 0;
+    max-height: 480px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    z-index: 1000;
+    box-shadow: 
+        0 8px 32px rgba(59, 130, 246, 0.12),
+        0 4px 16px rgba(0, 0, 0, 0.06);
+    
+    /* Masqué par défaut */
+    display: none !important;
+    opacity: 0;
+    transform: translateY(-12px) scale(0.98);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* État actif avec animation fluide */
+.search-suggestions.active {
+    display: block !important;
+    opacity: 1 !important;
+    transform: translateY(0) scale(1) !important;
+    visibility: visible !important;
+}
+
+/* Chaque suggestion - design moderne */
+.search-suggestions > div {
+    padding: 16px 20px;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.5);
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.search-suggestions > div:last-child {
+    border-bottom: none;
+}
+
+/* Effet hover élégant */
+.search-suggestions > div:hover {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(147, 197, 253, 0.12) 100%) !important;
+    transform: translateX(4px);
+    padding-left: 24px;
+}
+
+/* Icône patinoire - gradient moderne */
+.search-suggestions .ice-gradient {
+    background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 50%, #93c5fd 100%);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+}
+
+/* Noms de patinoires - typographie élégante */
+.search-suggestions h4 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+    line-height: 1.3;
+}
+
+/* Informations secondaires */
+.search-suggestions .text-gray-600 {
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.search-suggestions .text-gray-500 {
+    color: #94a3b8;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+/* Icônes SVG - couleur harmonisée */
+.search-suggestions svg {
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+
+.search-suggestions > div:hover svg {
+    transform: scale(1.1);
+}
+
+/* Flèche de navigation */
+.search-suggestions .text-blue-500 {
+    color: #3b82f6;
+    opacity: 0.6;
+    transition: all 0.2s ease;
+}
+
+.search-suggestions > div:hover .text-blue-500 {
+    opacity: 1;
+    transform: translateX(4px);
+}
+
+/* Scrollbar personnalisée */
+.search-suggestions::-webkit-scrollbar {
+    width: 6px;
+}
+
+.search-suggestions::-webkit-scrollbar-track {
+    background: rgba(241, 245, 249, 0.5);
+    border-radius: 10px;
+    margin: 8px 0;
+}
+
+.search-suggestions::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #94a3b8 0%, #cbd5e1 100%);
+    border-radius: 10px;
+    transition: background 0.2s ease;
+}
+
+.search-suggestions::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #64748b 0%, #94a3b8 100%);
+}
+
+/* Message "Aucune patinoire trouvée" */
+.search-suggestions .text-center {
+    padding: 32px 20px;
+}
+
+.search-suggestions .text-center p {
+    color: #94a3b8;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+/* Animation d'entrée pour chaque suggestion */
+.search-suggestions.active > div {
+    animation: slideInSuggestion 0.3s ease forwards;
+    opacity: 0;
+}
+
+.search-suggestions.active > div:nth-child(1) { animation-delay: 0.05s; }
+.search-suggestions.active > div:nth-child(2) { animation-delay: 0.08s; }
+.search-suggestions.active > div:nth-child(3) { animation-delay: 0.11s; }
+.search-suggestions.active > div:nth-child(4) { animation-delay: 0.14s; }
+.search-suggestions.active > div:nth-child(5) { animation-delay: 0.17s; }
+
+@keyframes slideInSuggestion {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Badge horaires - style amélioré */
+.search-suggestions .line-clamp-1 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 280px;
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+    .search-suggestions {
+        border-radius: 16px;
+        max-height: 360px;
+    }
+    
+    .search-suggestions > div {
+        padding: 14px 16px;
+    }
+    
+    .search-suggestions h4 {
+        font-size: 15px;
+    }
+    
+    .search-suggestions .text-gray-600 {
+        font-size: 13px;
+    }
+    
+    .search-suggestions .text-gray-500 {
+        font-size: 12px;
+    }
+    
+    .search-suggestions .line-clamp-1 {
+        max-width: 200px;
+    }
+}
+
+/* Amélioration de la barre de recherche elle-même */
+#search-input {
+    transition: all 0.3s ease;
+}
+
+#search-input:focus {
+    box-shadow: 
+        0 0 0 4px rgba(59, 130, 246, 0.1),
+        0 8px 32px rgba(59, 130, 246, 0.15);
+    transform: translateY(-2px);
+}
+
+/* ========================================
+   🏠 BOUTON HOME - STYLE CHECKICE
+   ======================================== */
+
+#header-home-button {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+    border: none;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#header-home-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+}
+
+#header-home-button:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+}
+
+#header-home-button svg {
+    width: 24px;
+    height: 24px;
+    stroke: white;
+    stroke-width: 2.5;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+/* Container pour les boutons dynamiques */
+.dynamic-buttons {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+
+/* ========================================
+   BOUTON FLOTTANT - ACTIONS RAPIDES
+   ======================================== */
+
+.floating-action button {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  border: none;
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  /* ✅ CENTRAGE PARFAIT */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0; /* Supprimer tout padding */
+}
+
+.floating-action button svg {
+  width: 28px;
+  height: 28px;
+  color: white;
+  /* ✅ Assurer que le SVG lui-même est centré */
+  display: block;
+  margin: 0;
+}
+
+.floating-action button:hover {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  box-shadow: 0 12px 32px rgba(59, 130, 246, 0.5);
+  transform: translateY(-2px) rotate(90deg);
+}
+
+.floating-action button:active {
+  transform: translateY(0) scale(0.95);
+}
+
+/* ========================================
+   MODALE DE SAISIE PERSONNALISÉE
+   ======================================== */
+
+.custom-prompt-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 15px;
+  font-family: inherit;
+  resize: vertical;
+  margin-bottom: 20px;
+  transition: border-color 0.2s ease;
+}
+
+.custom-prompt-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.custom-prompt-input::placeholder {
+  color: #94a3b8;
 }

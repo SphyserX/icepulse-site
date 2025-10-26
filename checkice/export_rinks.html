@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Export Rinks CheckICE</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+            max-width: 500px;
+        }
+        h1 { color: #1f2937; margin-bottom: 20px; }
+        button {
+            padding: 16px 40px;
+            font-size: 18px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+        button:hover:not(:disabled) { transform: translateY(-2px); }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+        #status {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f3f4f6;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 14px;
+            display: none;
+        }
+        #status.show { display: block; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📥 Export Collection Rinks</h1>
+        <p style="color: #6b7280; margin-bottom: 30px;">
+            Télécharge toutes les patinoires de CheckICE
+        </p>
+        <button id="exportBtn">🚀 Télécharger Rinks</button>
+        <div id="status"></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+
+        // Config Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyCzYCGsi3zJSZPd-O6cNuzNH7Bfy6zbnk4",
+            authDomain: "checkice-app.firebaseapp.com",
+            projectId: "checkice-app",
+            storageBucket: "checkice-app.firebasestorage.app",
+            messagingSenderId: "551425068468",
+            appId: "1:551425068468:web:6337614147d99566e376e1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const btn = document.getElementById('exportBtn');
+        const status = document.getElementById('status');
+
+        btn.onclick = async () => {
+            try {
+                btn.disabled = true;
+                btn.textContent = '⏳ Téléchargement...';
+                status.classList.add('show');
+                status.innerHTML = '🔄 Récupération des patinoires...<br>';
+
+                // Récupérer TOUTES les patinoires
+                const snapshot = await getDocs(collection(db, 'rinks'));
+                
+                const rinks = [];
+                snapshot.forEach((doc) => {
+                    rinks.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+
+                status.innerHTML += `✅ ${rinks.length} patinoires récupérées<br>`;
+                status.innerHTML += `💾 Création du fichier...<br>`;
+
+                // Créer le JSON
+                const jsonData = {
+                    exportDate: new Date().toISOString(),
+                    collection: "rinks",
+                    count: rinks.length,
+                    data: rinks
+                };
+
+                const blob = new Blob([JSON.stringify(jsonData, null, 2)], {
+                    type: 'application/json'
+                });
+
+                // Télécharger
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `checkice-rinks-${Date.now()}.json`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+
+                status.innerHTML += `<br>🎉 <strong>Téléchargé !</strong><br>`;
+                status.innerHTML += `📄 ${rinks.length} patinoires<br>`;
+                status.innerHTML += `💾 Fichier: checkice-rinks-${Date.now()}.json`;
+
+                btn.textContent = '✅ Téléchargé !';
+                btn.style.background = 'linear-gradient(135deg, #059669, #047857)';
+
+            } catch (error) {
+                console.error('Erreur:', error);
+                status.innerHTML += `<br>❌ <strong>Erreur:</strong> ${error.message}`;
+                btn.disabled = false;
+                btn.textContent = '🔄 Réessayer';
+                btn.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+            }
+        };
+    </script>
+</body>
+</html>
