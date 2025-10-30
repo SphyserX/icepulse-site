@@ -72,7 +72,6 @@ text
 ### 3. Configuration Firebase
 La configuration se trouve dans `firebase.js` :
 const firebaseConfig = {
-apiKey: "AIzaSyCzYCGsi3zJSZPd-O6cNuzNH7Bfy6zbnk4",
 authDomain: "checkice-app.firebaseapp.com",
 projectId: "checkice-app",
 // ... autres paramètres
