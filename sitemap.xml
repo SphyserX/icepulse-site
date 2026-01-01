@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="https://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <!-- Page d'accueil -->
+  <url>
+    <loc>https://icepulse.netlify.app/</loc>
+    <lastmod>2025-07-09</lastmod>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- Fichiers PDF -->
+  <url>
+    <loc>https://icepulse.netlify.app/documents/Dossier_Inscription_ICEPULSE_2025-2026.pdf</loc>
+    <lastmod>2025-07-09</lastmod>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://icepulse.netlify.app/documents/Status.pdf</loc>
+    <lastmod>2025-07-09</lastmod>
+    <priority>0.5</priority>
+  </url>
+
+  <url>
+    <loc>https://icepulse.netlify.app/documents/Reglement_Interieur.pdf</loc>
+    <lastmod>2025-07-09</lastmod>
+    <priority>0.5</priority>
+  </url>
+
+</urlset>
